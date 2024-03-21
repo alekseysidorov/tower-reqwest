@@ -15,6 +15,9 @@
     dprint
     just
     cargo-nextest
+    # reqwest dependencies
+    openssl.dev
+    pkg-config
   ];
 
   scripts = {
