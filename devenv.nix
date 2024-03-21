@@ -8,9 +8,6 @@
       channel = "stable";
       components = [ "rustc" "cargo" "clippy" "rustfmt" "rust-analyzer" ];
     };
-    # Explicitly disable C language support to reduce the amount of dependencies installed by devshell.
-    c.enable = false;
-    cplusplus.enable = false;
   };
 
   packages = with pkgs; [
@@ -35,4 +32,15 @@
   enterTest = ''
     ci-tests
   '';
+
+  pre-commit.hooks = {
+    dprint = {
+      enable = true;
+      # The name of the hook (appears on the report table):
+      name = "Format code with dprint";
+      # The command to execute (mandatory):
+      entry = "dprint fmt";
+      package = pkgs.dprint;
+    };
+  };
 }
