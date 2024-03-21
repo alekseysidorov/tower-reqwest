@@ -1,3 +1,5 @@
+pub use response::{into_http_response, response_body};
+
 mod response;
 
 fn reqwest_status_code_to_http(code: reqwest::StatusCode) -> http::StatusCode {
