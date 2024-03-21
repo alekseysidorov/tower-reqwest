@@ -12,13 +12,18 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: cachix/cachix-action@v14
         with:
-          name: nixpkgs-cross-overlay
+          name: devenv
+      - name: Install devenv.sh
+        run: nix profile install tarball+https://install.devenv.sh/latest
 
       - name: "Check formatting"
         run: nix flake check
 
       - name: "Run linters"
-        run: nix develop --command ci-run-lints
+        shell: devenv shell bash -e {0}
+        run: |
+          ci-fmt
+          ci-lints
 
   tests:
     strategy:
@@ -33,7 +38,9 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: cachix/cachix-action@v14
         with:
-          name: nixpkgs-cross-overlay
+          name: devenv
+      - name: Install devenv.sh
+        run: nix profile install tarball+https://install.devenv.sh/latest
 
       - name: "Run cargo tests"
-        run: nix develop --command ci-run-tests
+        run: devenv test
