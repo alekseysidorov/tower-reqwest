@@ -33,14 +33,14 @@
     ci-tests
   '';
 
-  pre-commit.hooks = {
-    dprint = {
-      enable = true;
-      # The name of the hook (appears on the report table):
-      name = "Format code with dprint";
-      # The command to execute (mandatory):
-      entry = "dprint fmt";
-      package = pkgs.dprint;
-    };
-  };
+  # pre-commit.hooks = {
+  #   dprint = {
+  #     enable = true;
+  #     # The name of the hook (appears on the report table):
+  #     name = "Format code with dprint";
+  #     # The command to execute (mandatory):
+  #     entry = "dprint fmt";
+  #     package = pkgs.dprint;
+  #   };
+  # };
 }
