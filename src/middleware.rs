@@ -2,58 +2,59 @@
 //!
 //! [`reqwest-middleware`]: https://crates.io/crates/reqwest-middleware
 
-use std::{fmt::Debug, sync::Arc};
+use std::{
+    sync::Arc,
+    task::{Context, Poll},
+};
 
-use reqwest::Request;
-use task_local_extensions::Extensions;
+use futures_util::{future::BoxFuture, FutureExt};
+use reqwest::{Client, Request, Response};
+use reqwest_middleware::{ClientWithMiddleware, Middleware};
 use tower::Service;
 
-type ReqwestMiddleware = Arc<dyn reqwest_middleware::Middleware>;
-type RequestWithExtensions<'a> = (Request, &'a mut Extensions);
-
 #[derive(Clone)]
-pub struct TowerLayer {
-    middleware: ReqwestMiddleware,
-}
+pub struct ServiceWrapper(ClientWithMiddleware);
 
-#[derive(Clone)]
-pub struct TowerService {
-    middleware: ReqwestMiddleware,
-}
-
-impl Debug for TowerLayer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TowerLayer").finish()
+impl From<ClientWithMiddleware> for ServiceWrapper {
+    fn from(value: ClientWithMiddleware) -> Self {
+        Self(value)
     }
 }
 
-impl Debug for TowerService {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TowerService").finish()
+impl From<(Client, Vec<Arc<dyn Middleware>>)> for ServiceWrapper {
+    fn from((client, middleware_stack): (Client, Vec<Arc<dyn Middleware>>)) -> Self {
+        Self::from(ClientWithMiddleware::new(client, middleware_stack))
     }
 }
 
-impl TowerLayer {
-    pub fn new(middleware: impl Into<ReqwestMiddleware>) -> Self {
-        Self {
-            middleware: middleware.into(),
-        }
-    }
-}
+impl Service<Request> for ServiceWrapper {
+    type Response = Response;
+    type Error = reqwest_middleware::Error;
+    // TODO Rewrite without boxing.
+    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
 
-impl<'a> Service<RequestWithExtensions<'a>> for TowerService {
-    type Response;
-    type Error;
-    type Future;
-
-    fn poll_ready(
-        &mut self,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Result<(), Self::Error>> {
-        todo!()
+    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
     }
 
     fn call(&mut self, req: Request) -> Self::Future {
-        todo!()
+        let client = self.0.clone();
+        async move { client.execute(req).await }.boxed()
+    }
+}
+
+impl Service<Request> for &ServiceWrapper {
+    type Response = Response;
+    type Error = reqwest_middleware::Error;
+    // TODO Rewrite without boxing.
+    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+
+    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, req: Request) -> Self::Future {
+        let client = self.0.clone();
+        async move { client.execute(req).await }.boxed()
     }
 }
