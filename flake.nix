@@ -20,17 +20,27 @@
             rust-overlay.overlays.default
             (final: prev: {
               rustToolchains = {
-                stable = pkgs.rust-bin.stable.latest.default.override {
+                stable = prev.rust-bin.stable.latest.default.override {
                   extensions = [
                     "rust-src"
                     "rust-analyzer"
                   ];
                 };
-                nightly = pkgs.rust-bin.nightly.latest.default;
+                nightly = prev.rust-bin.nightly.latest.default;
               };
             })
           ];
         };
+        # Setup runtime dependencies
+        runtimeInputs = with pkgs; [
+          rustToolchains.stable
+          openssl.dev
+          pkg-config
+        ]
+        # Some additional libraries for the Darwin platform
+        ++ lib.optionals stdenv.isDarwin [
+          darwin.apple_sdk.frameworks.SystemConfiguration
+        ];
 
         # Eval the treefmt modules from ./treefmt.nix
         treefmt = (treefmt-nix.lib.evalModule pkgs ./treefmt.nix).config.build;
@@ -38,19 +48,15 @@
         ci = with pkgs; {
           tests = writeShellApplication {
             name = "ci-run-tests";
-            runtimeInputs = [
-              rustToolchains.stable
-            ];
+            inherit runtimeInputs;
             text = ''
               cargo test --workspace --all-features --all-targets
-              # TODO Add cargo publish test with the cargo workspaces
             '';
           };
+
           lints = writeShellApplication {
             name = "ci-run-lints";
-            runtimeInputs = [
-              rustToolchains.stable
-            ];
+            inherit runtimeInputs;
             text = ''
               cargo clippy --workspace --all-features --all --all-targets
               cargo doc --workspace --all-features  --no-deps
@@ -59,10 +65,7 @@
           # Run them all together
           all = writeShellApplication {
             name = "ci-run-all";
-            runtimeInputs = [
-              ci.lints
-              ci.tests
-            ];
+            runtimeInputs = [ ci.lints ci.tests ];
             text = ''
               ci-run-tests
               ci-run-lints
@@ -77,13 +80,11 @@
         checks.formatting = treefmt.check self;
 
         devShells.default = pkgs.mkShell {
-          nativeBuildInputs = with pkgs;
-            [
-              rustToolchains.stable
-              ci.all
-              ci.lints
-              ci.tests
-            ];
+          nativeBuildInputs = runtimeInputs ++ [
+            ci.all
+            ci.lints
+            ci.tests
+          ];
         };
 
         # Nightly compilator to run miri tests
