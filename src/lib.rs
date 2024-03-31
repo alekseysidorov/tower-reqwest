@@ -14,11 +14,16 @@ pub mod error;
 #[cfg(feature = "reqwest-middleware")]
 #[cfg_attr(docsrs, doc(cfg(feature = "reqwest-middleware")))]
 pub mod middleware;
+#[cfg(feature = "util")]
+#[cfg_attr(docsrs, doc(cfg(feature = "util")))]
+pub mod util;
 
-/// Response type from `http` crate with the body from the `reqwest` crate.
-pub type HttpResponse = http::Response<reqwest::Body>;
 /// Alias for a Result with the error type `crate::Error`.
 pub type Result<T, E = crate::Error> = std::result::Result<T, E>;
+/// Body type used in this crate for requests and responses.
+pub type HttpBody = reqwest::Body;
+/// Response type from `http` crate with the body from this crate.
+pub type HttpResponse = http::Response<HttpBody>;
 
 #[derive(Debug, Clone)]
 pub struct HttpClientService<S>(S);
@@ -31,10 +36,11 @@ impl<S> HttpClientService<S> {
 
 impl<S, ReqBody> Service<http::Request<ReqBody>> for HttpClientService<S>
 where
-    S: Service<reqwest::Request, Response = reqwest::Response>,
+    S: Service<reqwest::Request>,
     S::Future: Send + 'static,
     S::Error: 'static,
     crate::Error: From<S::Error>,
+    HttpResponse: From<S::Response>,
     reqwest::Body: From<ReqBody>,
 {
     type Response = HttpResponse;
