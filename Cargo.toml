@@ -18,10 +18,11 @@ http = "1.0"
 hyper = { version = "1.0" }
 include-utils = "0.2"
 log = "0.4"
+pin-project = "1.0"
 reqwest = { version = "0.12", features = ["stream"] }
 reqwest-middleware = { version = "0.2.5", optional = true }
-tower = { version = "0.4" }
 thiserror = "1.0"
+tower = { version = "0.4" }
 
 [dev-dependencies]
 anyhow = "1.0"

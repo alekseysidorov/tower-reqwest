@@ -4,14 +4,16 @@
 
 use std::task::Poll;
 
-use futures_util::{future::BoxFuture, Future, FutureExt, TryFutureExt};
+use futures_util::Future;
+use pin_project::pin_project;
 use tower::{Layer, Service};
+
 pub use crate::error::Error;
 
+pub mod error;
 #[cfg(feature = "reqwest-middleware")]
 #[cfg_attr(docsrs, doc(cfg(feature = "reqwest-middleware")))]
 pub mod middleware;
-pub mod error;
 
 /// Response type from `http` crate with the body from the `reqwest` crate.
 pub type HttpResponse = http::Response<reqwest::Body>;
@@ -37,8 +39,7 @@ where
 {
     type Response = HttpResponse;
     type Error = crate::Error;
-    // TODO We need ATPIT to get rid of boxing.
-    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    type Future = ExecuteRequestFuture<S>;
 
     fn poll_ready(
         &mut self,
@@ -48,29 +49,9 @@ where
     }
 
     fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
-        let fut = execute_request(&mut self.0, req);
-        async move { fut?.await }.boxed()
+        let future = reqwest::Request::try_from(req).map(|reqw| self.0.call(reqw));
+        ExecuteRequestFuture::new(future)
     }
-}
-
-fn execute_request<S, B>(
-    service: &mut S,
-    req: http::Request<B>,
-) -> crate::Result<impl Future<Output = crate::Result<HttpResponse>> + Send + 'static>
-where
-    S: Service<reqwest::Request>,
-    S::Future: Send + 'static,
-    S::Error: 'static,
-    S::Response: 'static,
-    crate::Error: From<S::Error>,
-    reqwest::Body: From<B>,
-    HttpResponse: From<S::Response>,
-{
-    let reqw = reqwest::Request::try_from(req)?;
-    Ok(service
-        .call(reqw)
-        .map_ok(HttpResponse::from)
-        .map_err(crate::Error::from))
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -81,6 +62,70 @@ impl<S> Layer<S> for HttpClientLayer {
 
     fn layer(&self, service: S) -> Self::Service {
         HttpClientService(service)
+    }
+}
+
+#[pin_project]
+/// Future that resolves to the response or failure to connect.
+#[derive(Debug)]
+pub struct ExecuteRequestFuture<S>
+where
+    S: Service<reqwest::Request>,
+{
+    #[pin]
+    inner: Inner<S::Future>,
+}
+
+#[pin_project(project = InnerProj)]
+#[derive(Debug)]
+enum Inner<F> {
+    Future {
+        #[pin]
+        fut: F,
+    },
+    Error {
+        error: Option<crate::Error>,
+    },
+}
+
+impl<S> ExecuteRequestFuture<S>
+where
+    S: Service<reqwest::Request>,
+{
+    fn new(future: Result<S::Future, reqwest::Error>) -> Self {
+        let inner = match future {
+            Ok(fut) => Inner::Future { fut },
+            Err(error) => Inner::Error {
+                error: Some(error.into()),
+            },
+        };
+        Self { inner }
+    }
+}
+
+impl<S> Future for ExecuteRequestFuture<S>
+where
+    S: Service<reqwest::Request>,
+    crate::Error: From<S::Error>,
+    HttpResponse: From<S::Response>,
+{
+    type Output = crate::Result<HttpResponse>;
+
+    fn poll(
+        self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Self::Output> {
+        let this = self.project();
+        match this.inner.project() {
+            InnerProj::Future { fut } => fut
+                .poll(cx)
+                .map_ok(HttpResponse::from)
+                .map_err(crate::Error::from),
+            InnerProj::Error { error } => {
+                let error = error.take().expect("Polled after ready");
+                Poll::Ready(Err(error))
+            }
+        }
     }
 }
 
