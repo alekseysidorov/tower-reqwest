@@ -1,62 +1,39 @@
 //! # Overview
 //!
 #![doc = include_utils::include_md!("README.md:description")]
-//!
 
 use std::task::Poll;
 
 use futures_util::{future::BoxFuture, Future, FutureExt, TryFutureExt};
-use tower::Service;
+use tower::{Layer, Service};
+pub use crate::error::Error;
 
+#[cfg(feature = "reqwest-middleware")]
+#[cfg_attr(docsrs, doc(cfg(feature = "reqwest-middleware")))]
 pub mod middleware;
+pub mod error;
 
+/// Response type from `http` crate with the body from the `reqwest` crate.
 pub type HttpResponse = http::Response<reqwest::Body>;
-
-// TODO Use own error type
-pub type Error = reqwest_middleware::Error;
+/// Alias for a Result with the error type `crate::Error`.
 pub type Result<T, E = crate::Error> = std::result::Result<T, E>;
 
-trait ExecuteRequest<ReqBody>
-where
-    ReqBody: Into<reqwest::Body>,
-{
-    fn execute_request(
-        &self,
-        req: http::Request<ReqBody>,
-    ) -> crate::Result<impl Future<Output = crate::Result<HttpResponse>> + Send + 'static>;
-}
-
 #[derive(Debug, Clone)]
-pub struct ReqwestService<E> {
-    client: E,
-}
+pub struct HttpClientService<S>(S);
 
-impl<E> ReqwestService<E> {
-    pub fn new(client: E) -> Self {
-        Self { client }
+impl<S> HttpClientService<S> {
+    pub fn new(inner: S) -> Self {
+        Self(inner)
     }
 }
 
-impl<ReqBody> ExecuteRequest<ReqBody> for reqwest::Client
+impl<S, ReqBody> Service<http::Request<ReqBody>> for HttpClientService<S>
 where
-    ReqBody: Into<reqwest::Body>,
-{
-    fn execute_request(
-        &self,
-        req: http::Request<ReqBody>,
-    ) -> crate::Result<impl Future<Output = crate::Result<HttpResponse>> + Send + 'static> {
-        let reqw: reqwest::Request = req.try_into()?;
-        Ok(self
-            .execute(reqw)
-            .map_ok(HttpResponse::from)
-            .map_err(crate::Error::from))
-    }
-}
-
-impl<S, ReqBody> Service<http::Request<ReqBody>> for ReqwestService<S>
-where
-    S: ExecuteRequest<ReqBody>,
-    ReqBody: Into<reqwest::Body>,
+    S: Service<reqwest::Request, Response = reqwest::Response>,
+    S::Future: Send + 'static,
+    S::Error: 'static,
+    crate::Error: From<S::Error>,
+    reqwest::Body: From<ReqBody>,
 {
     type Response = HttpResponse;
     type Error = crate::Error;
@@ -66,36 +43,44 @@ where
     fn poll_ready(
         &mut self,
         _cx: &mut std::task::Context<'_>,
-    ) -> Poll<std::prelude::v1::Result<(), Self::Error>> {
+    ) -> std::task::Poll<Result<(), Self::Error>> {
         Poll::Ready(Ok(()))
     }
 
     fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
-        let fut = self.client.execute_request(req);
+        let fut = execute_request(&mut self.0, req);
         async move { fut?.await }.boxed()
     }
 }
 
-impl<S, ReqBody> Service<http::Request<ReqBody>> for &ReqwestService<S>
+fn execute_request<S, B>(
+    service: &mut S,
+    req: http::Request<B>,
+) -> crate::Result<impl Future<Output = crate::Result<HttpResponse>> + Send + 'static>
 where
-    S: ExecuteRequest<ReqBody>,
-    ReqBody: Into<reqwest::Body>,
+    S: Service<reqwest::Request>,
+    S::Future: Send + 'static,
+    S::Error: 'static,
+    S::Response: 'static,
+    crate::Error: From<S::Error>,
+    reqwest::Body: From<B>,
+    HttpResponse: From<S::Response>,
 {
-    type Response = HttpResponse;
-    type Error = crate::Error;
-    // TODO We need ATPIT to get rid of boxing.
-    type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
+    let reqw = reqwest::Request::try_from(req)?;
+    Ok(service
+        .call(reqw)
+        .map_ok(HttpResponse::from)
+        .map_err(crate::Error::from))
+}
 
-    fn poll_ready(
-        &mut self,
-        _cx: &mut std::task::Context<'_>,
-    ) -> Poll<std::prelude::v1::Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
+#[derive(Debug, Clone, Copy)]
+pub struct HttpClientLayer;
 
-    fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
-        let fut = self.client.execute_request(req);
-        async move { fut?.await }.boxed()
+impl<S> Layer<S> for HttpClientLayer {
+    type Service = HttpClientService<S>;
+
+    fn layer(&self, service: S) -> Self::Service {
+        HttpClientService(service)
     }
 }
 
@@ -106,14 +91,14 @@ mod tests {
     use pretty_assertions::assert_eq;
     use reqwest::Client;
     use serde::{Deserialize, Serialize};
-    use tower::{Service, ServiceBuilder};
+    use tower::{Service, ServiceBuilder, ServiceExt};
     use tower_http::{request_id::MakeRequestUuid, ServiceBuilderExt};
     use wiremock::{
         matchers::{method, path},
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::ReqwestService;
+    use crate::HttpClientLayer;
 
     #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
     struct Info {
@@ -131,7 +116,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_service_with_client() -> anyhow::Result<()> {
+    async fn test_http_client_layer() -> anyhow::Result<()> {
         // Start a background HTTP server on a random local port
         let mock_server = MockServer::start().await;
         // Get mock server base uri
@@ -156,28 +141,35 @@ mod tests {
             // Mounting the mock on the mock server - it's now effective!
             .mount(&mock_server)
             .await;
-        // Create HTTP requests executor.
-        let mut client = ReqwestService::new(Client::new());
+        // Create HTTP client
+        let client = Client::new();
 
         // Execute request without layers
         let request = http::request::Builder::new()
             .method(http::Method::GET)
             .uri(format!("{mock_uri}/hello"))
-            // TODO Improve body manipulations
+            // TODO Make in easy to create requests without body.
             .body("")?;
-        let response = client.call(request.clone()).await?;
 
+        let response = ServiceBuilder::new()
+            .layer(HttpClientLayer)
+            .service(client.clone())
+            .call(request.clone())
+            .await?;
         assert!(response.status().is_success());
         // Try to read body
         let info = Info::from_body(response.into_body()).await?;
         assert!(info.request_id.is_none());
 
-        // Execute request via ServiceBuilder
-        let mut service = ServiceBuilder::new()
+        // TODO Find the way to avoid cloning the service.
+        let service = ServiceBuilder::new()
             .override_response_header(USER_AGENT, HeaderValue::from_static("tower-reqwest"))
             .set_x_request_id(MakeRequestUuid)
-            .service(&client);
-        let response = service.call(request).await?;
+            .layer(HttpClientLayer)
+            .service(client)
+            .boxed_clone();
+        // Execute request with a several layers from the tower-http
+        let response = service.clone().call(request).await?;
 
         assert!(response.status().is_success());
         assert_eq!(

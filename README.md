@@ -7,6 +7,6 @@
 
 <!-- ANCHOR: description -->
 
-TODO
+This library provides adapters to use reqwest client with the tower-http middlewares.
 
 <!-- ANCHOR_END: description -->

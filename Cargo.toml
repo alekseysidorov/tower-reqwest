@@ -1,6 +1,6 @@
 [package]
 name = "tower-reqwest"
-description = "TODO"
+description = "Adapter between reqwest and tower-http crates."
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
@@ -9,7 +9,8 @@ repository = "https://github.com/alekseysidorov/byte-unit-serde"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = []
+default = ["reqwest-middleware"]
+reqwest-middleware = ["dep:reqwest-middleware"]
 
 [dependencies]
 futures-util = "0.3"
@@ -18,33 +19,37 @@ hyper = { version = "1.0" }
 include-utils = "0.2"
 log = "0.4"
 reqwest = { version = "0.12", features = ["stream"] }
-reqwest-middleware = { version = "0.2.5" }
-task-local-extensions = "0.1"
+reqwest-middleware = { version = "0.2.5", optional = true }
 tower = { version = "0.4" }
+thiserror = "1.0"
 
 [dev-dependencies]
 anyhow = "1.0"
+http-body-util = "0.1"
 pretty_assertions = "1.4.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.0" }
-tower-http = { version = "0.5", features = ["set-header", "util", "request-id"] }
+tower-http = { version = "0.5", features = [
+  "set-header",
+  "util",
+  "request-id",
+] }
 wiremock = "0.6.0"
-http-body-util = "0.1"
 
-# [lints.rust]
+[lints.rust]
 # missing_docs = "warn"
-# missing_debug_implementations = "warn"
-# unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+unsafe_code = "forbid"
 
-# [lints.clippy]
-# pedantic = "warn"
-# module_name_repetitions = "allow"
-# missing_panics_doc = "warn"
-# missing_errors_doc = "allow"
+[lints.clippy]
+pedantic = "warn"
+module_name_repetitions = "allow"
+missing_panics_doc = "warn"
+missing_errors_doc = "allow"
 
-# [workspace.lints.rustdoc]
-# broken_intra_doc_links = "deny"
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "deny"
 
 [patch.crates-io]
 reqwest-middleware = { git = "https://github.com/campeis/reqwest-middleware.git", rev = "fcee833" }
