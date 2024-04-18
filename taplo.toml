@@ -6,3 +6,4 @@ keys = ["dependencies", "*-dependencies"]
 
 [rule.formatting]
 reorder_keys = true
+column_width = 100

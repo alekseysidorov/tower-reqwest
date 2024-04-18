@@ -1,4 +1,4 @@
-//! Adapters for [`reqwest-middleware`] ecosystem.
+//! Adapter for [`reqwest-middleware`] client.
 //!
 //! [`reqwest-middleware`]: https://crates.io/crates/reqwest-middleware
 
@@ -12,22 +12,21 @@ use reqwest::Client;
 use reqwest_middleware::{ClientWithMiddleware, Middleware};
 use tower::Service;
 
-#[derive(Clone, Debug)]
-pub struct ReqwestService(ClientWithMiddleware);
+use crate::HttpClientService;
 
-impl From<ClientWithMiddleware> for ReqwestService {
+impl From<ClientWithMiddleware> for HttpClientService<ClientWithMiddleware> {
     fn from(value: ClientWithMiddleware) -> Self {
         Self(value)
     }
 }
 
-impl From<(Client, Vec<Arc<dyn Middleware>>)> for ReqwestService {
+impl From<(Client, Vec<Arc<dyn Middleware>>)> for HttpClientService<ClientWithMiddleware> {
     fn from((client, middleware_stack): (Client, Vec<Arc<dyn Middleware>>)) -> Self {
         Self::from(ClientWithMiddleware::new(client, middleware_stack))
     }
 }
 
-impl Service<reqwest::Request> for ReqwestService {
+impl Service<reqwest::Request> for HttpClientService<ClientWithMiddleware> {
     type Response = reqwest::Response;
     type Error = reqwest_middleware::Error;
     // TODO We need ATPIT to get rid of boxing.
@@ -43,11 +42,10 @@ impl Service<reqwest::Request> for ReqwestService {
     }
 }
 
-impl Service<reqwest::Request> for &ReqwestService {
+impl Service<reqwest::Request> for &HttpClientService<ClientWithMiddleware> {
     type Response = reqwest::Response;
     type Error = reqwest_middleware::Error;
     // TODO We need ATPIT to get rid of boxing.
-
     type Future = BoxFuture<'static, Result<Self::Response, Self::Error>>;
 
     fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -57,6 +55,15 @@ impl Service<reqwest::Request> for &ReqwestService {
     fn call(&mut self, req: reqwest::Request) -> Self::Future {
         let client = self.0.clone();
         async move { client.execute(req).await }.boxed()
+    }
+}
+
+impl From<reqwest_middleware::Error> for crate::error::Error {
+    fn from(value: reqwest_middleware::Error) -> Self {
+        match value {
+            reqwest_middleware::Error::Middleware(err) => Self::Middleware(err.into()),
+            reqwest_middleware::Error::Reqwest(err) => Self::Client(err.into()),
+        }
     }
 }
 
@@ -72,7 +79,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{middleware::ReqwestService, HttpClientLayer};
+    use crate::{HttpClientLayer, HttpClientService};
 
     // Check that we can use tower-http layers on top of the compatibility wrapper.
     #[tokio::test]
@@ -95,7 +102,7 @@ mod tests {
         let response = ServiceBuilder::new()
             .override_response_header(USER_AGENT, HeaderValue::from_static("tower-reqwest"))
             .layer(HttpClientLayer)
-            .service(ReqwestService::from(client))
+            .service(HttpClientService::from(client))
             .call(
                 http::request::Builder::new()
                     .method(http::Method::GET)

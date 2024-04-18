@@ -73,13 +73,3 @@ impl From<reqwest::Error> for Error {
         Self::Client(value.into())
     }
 }
-
-#[cfg(feature = "reqwest-middleware")]
-impl From<reqwest_middleware::Error> for Error {
-    fn from(value: reqwest_middleware::Error) -> Self {
-        match value {
-            reqwest_middleware::Error::Middleware(err) => Self::Middleware(err.into()),
-            reqwest_middleware::Error::Reqwest(err) => Self::Client(err),
-        }
-    }
-}
