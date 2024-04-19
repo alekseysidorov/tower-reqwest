@@ -87,10 +87,9 @@ where
     ) -> std::task::Poll<Self::Output> {
         let this = self.project();
         match this.inner.project() {
-            InnerProj::Future { fut } => fut
-                .poll(cx)
-                .map_ok(From::from)
-                .map_err(crate::Error::from),
+            InnerProj::Future { fut } => {
+                fut.poll(cx).map_ok(From::from).map_err(crate::Error::from)
+            }
             InnerProj::Error { error } => {
                 let error = error.take().expect("Polled after ready");
                 Poll::Ready(Err(error))

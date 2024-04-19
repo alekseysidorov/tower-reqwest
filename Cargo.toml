@@ -1,55 +1,24 @@
-[package]
-name = "tower-reqwest"
-description = "Adapter between reqwest and tower-http crates."
-version = "0.1.2"
+[workspace]
+resolver = "2"
+members = ["tower-http-client", "tower-http-client-core", "tower-reqwest"]
+
+[workspace.package]
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/alekseysidorov/tower-reqwest"
 documentation = "https://docs.rs/crate/tower-reqwest"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[features]
-default = ["util", "reqwest-middleware"]
-reqwest-middleware = ["dep:reqwest-middleware"]
-util = []
-
-[dependencies]
-futures-util = "0.3"
-http = "1.0"
-hyper = { version = "1.0" }
-include-utils = "0.2"
-log = "0.4"
-pin-project = "1.0"
-reqwest = { version = "0.12", features = ["stream"] }
-reqwest-middleware = { version = "0.3.0", optional = true }
-thiserror = "1.0"
-tower = { version = "0.4" }
-tower-http = { version = "0.5", features = ["set-header", "util", "request-id"] }
-
-[dev-dependencies]
-anyhow = "1.0"
-http-body-util = "0.1"
-pretty_assertions = "1.4.0"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
-wiremock = "0.6.0"
-
-[lints.rust]
+[workspace.lints.rust]
 missing_docs = "warn"
 missing_debug_implementations = "warn"
 unsafe_code = "forbid"
 
-[lints.clippy]
+[workspace.lints.clippy]
 pedantic = "warn"
 module_name_repetitions = "allow"
 missing_panics_doc = "warn"
 missing_errors_doc = "allow"
 
-[lints.rustdoc]
+[workspace.lints.rustdoc]
 broken_intra_doc_links = "deny"
-
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
