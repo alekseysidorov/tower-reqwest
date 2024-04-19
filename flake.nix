@@ -39,6 +39,7 @@
       # Setup runtime dependencies
       runtimeInputs = with pkgs; [
         rustToolchains.stable
+        cargo-nextest
         openssl.dev
         pkg-config
       ]
@@ -55,7 +56,8 @@
           name = "ci-run-tests";
           inherit runtimeInputs;
           text = ''
-            cargo test --workspace --all-features --all-targets
+            cargo nextest run --all-features --workspace --all-targets
+            cargo test --workspace --all-features --doc
           '';
         };
 
