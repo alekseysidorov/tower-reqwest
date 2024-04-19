@@ -18,6 +18,8 @@ pub mod util;
 pub type Result<T, E = crate::Error> = std::result::Result<T, E>;
 /// Body type used in this crate for requests and responses.
 pub type HttpBody = reqwest::Body; // TODO Use own type instead of reqwest one.
+/// Response type from `http` crate with the body from this crate.
+pub type HttpResponse = http::Response<HttpBody>;
 
 /// Adapter type to creating Tower HTTP services from the various clients.
 #[derive(Debug, Clone)]

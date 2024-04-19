@@ -2,10 +2,9 @@
 
 use std::future::Future;
 
-use hyper::body::Body;
 use tower::Service;
 
-use crate::HttpBody;
+use crate::{HttpBody, HttpResponse};
 
 /// An extension trait for Tower HTTP services with the typical client methods.
 pub trait HttpClientExt: Clone {
@@ -13,14 +12,14 @@ pub trait HttpClientExt: Clone {
     fn execute<B>(
         &self,
         request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<http::Response<impl Body>>>
+    ) -> impl Future<Output = crate::Result<HttpResponse>>
     where
         B: Into<HttpBody>;
 }
 
 impl<S> HttpClientExt for S
 where
-    S: Service<http::Request<HttpBody>, Response = http::Response<HttpBody>, Error = crate::Error>
+    S: Service<http::Request<HttpBody>, Response = HttpResponse, Error = crate::Error>
         + Clone
         + Send
         + 'static,
@@ -30,7 +29,7 @@ where
     fn execute<B>(
         &self,
         request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<http::Response<impl Body>>>
+    ) -> impl Future<Output = crate::Result<HttpResponse>>
     where
         B: Into<HttpBody>,
     {
