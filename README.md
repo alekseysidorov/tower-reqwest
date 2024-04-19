@@ -7,7 +7,7 @@
 
 <!-- ANCHOR: description -->
 
-This library provides adapters to use [reqwest] client with the [tower-http]
+This library provides adapters to use [reqwest] client with the [tower_http]
 layers.
 
 ## Warning
@@ -54,4 +54,4 @@ async fn main() -> anyhow::Result<()> {
 <!-- ANCHOR_END: description -->
 
 [reqwest]: https://github.com/seanmonstar/reqwest
-[tower-http]: https://github.com/tower-rs/tower-http
+[tower_http]: https://github.com/tower-rs/tower-http

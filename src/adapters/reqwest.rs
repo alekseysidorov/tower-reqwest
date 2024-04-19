@@ -1,4 +1,4 @@
-//! Adapter for [`reqwest-middleware`] client.
+//! Adapter for [`reqwest`] client.
 //!
 //! [`reqwest`]: https://crates.io/crates/reqwest
 
