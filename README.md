@@ -43,7 +43,8 @@ async fn main() -> anyhow::Result<()> {
         )
         .await?;
 
-    let value: Value = serde_json::from_slice(&response.into_body().collect().await?.to_bytes())?;
+    let bytes = response.into_body().collect().await?.to_bytes();
+    let value: Value = serde_json::from_slice(&bytes)?;
     println!("{value:#?}");
 
     Ok(())
