@@ -19,15 +19,18 @@ pub type HttpBody = reqwest::Body; // TODO Use own type instead of reqwest one.
 /// Response type from `http` crate with the body from this crate.
 pub type HttpResponse = http::Response<HttpBody>;
 
+/// Adapter type to creating Tower HTTP services from the various clients.
 #[derive(Debug, Clone)]
 pub struct HttpClientService<S>(S);
 
 impl<S> HttpClientService<S> {
-    pub fn new(inner: S) -> Self {
+    /// Creates a new HTTP client service wrapper.
+    pub const fn new(inner: S) -> Self {
         Self(inner)
     }
 }
 
+/// Layer that creates [`HttpClientService`] from the inner service.
 #[derive(Debug, Clone, Copy)]
 pub struct HttpClientLayer;
 

@@ -2,8 +2,7 @@
 //!
 //! [`reqwest`]: https://crates.io/crates/reqwest
 
-use std::task::Poll;
-use std::future::Future;
+use std::{future::Future, task::Poll};
 
 use pin_project::pin_project;
 use tower::Service;
@@ -35,7 +34,6 @@ where
         ExecuteRequestFuture::new(future)
     }
 }
-
 
 #[pin_project]
 /// Future that resolves to the response or failure to connect.
