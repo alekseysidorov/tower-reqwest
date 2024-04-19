@@ -7,7 +7,7 @@ use std::{future::Future, task::Poll};
 use pin_project::pin_project;
 use tower::Service;
 
-use crate::{HttpBody, HttpClientService, HttpResponse};
+use crate::{HttpBody, HttpClientService};
 
 impl<S, ReqBody> Service<http::Request<ReqBody>> for HttpClientService<S>
 where
@@ -15,10 +15,10 @@ where
     S::Future: Send + 'static,
     S::Error: 'static,
     crate::Error: From<S::Error>,
-    HttpResponse: From<S::Response>,
+    http::Response<HttpBody>: From<S::Response>,
     HttpBody: From<ReqBody>,
 {
-    type Response = HttpResponse;
+    type Response = http::Response<HttpBody>;
     type Error = crate::Error;
     type Future = ExecuteRequestFuture<S>;
 
@@ -77,9 +77,9 @@ impl<S> Future for ExecuteRequestFuture<S>
 where
     S: Service<reqwest::Request>,
     crate::Error: From<S::Error>,
-    HttpResponse: From<S::Response>,
+    http::Response<HttpBody>: From<S::Response>,
 {
-    type Output = crate::Result<HttpResponse>;
+    type Output = crate::Result<http::Response<HttpBody>>;
 
     fn poll(
         self: std::pin::Pin<&mut Self>,
@@ -89,7 +89,7 @@ where
         match this.inner.project() {
             InnerProj::Future { fut } => fut
                 .poll(cx)
-                .map_ok(HttpResponse::from)
+                .map_ok(From::from)
                 .map_err(crate::Error::from),
             InnerProj::Error { error } => {
                 let error = error.take().expect("Polled after ready");
