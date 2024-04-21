@@ -25,14 +25,14 @@ use tower_http::ServiceBuilderExt;
 use tower_http_client::util::HttpClientExt;
 use tower_reqwest::HttpClientLayer;
 
-/// Implementation agnostic HTTP client type definition.
+/// Implementation agnostic HTTP client.
 type HttpClient = tower::util::BoxCloneService<
     http::Request<reqwest::Body>,
     http::Response<reqwest::Body>,
     anyhow::Error,
 >;
 
-/// This method creates HTTP client with tower layers on top of the given client.
+/// Creates HTTP client with Tower layers on top of the given client.
 fn make_client(client: reqwest::Client) -> HttpClient {
     ServiceBuilder::new()
         // Add some layers.
