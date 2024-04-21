@@ -20,19 +20,34 @@ production use.
 use http::{header::USER_AGENT, HeaderValue};
 use http_body_util::BodyExt;
 use serde_json::Value;
-use tower::ServiceBuilder;
+use tower::{ServiceBuilder, ServiceExt};
 use tower_http::ServiceBuilderExt;
 use tower_http_client::util::HttpClientExt;
 use tower_reqwest::HttpClientLayer;
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    let client = ServiceBuilder::new()
+/// Implementation agnostic HTTP client type definition.
+type HttpClient = tower::util::BoxCloneService<
+    http::Request<reqwest::Body>,
+    http::Response<reqwest::Body>,
+    anyhow::Error,
+>;
+
+/// This method creates HTTP client with tower layers on top of the given client.
+fn make_client(client: reqwest::Client) -> HttpClient {
+    ServiceBuilder::new()
         // Add some layers.
         .override_request_header(USER_AGENT, HeaderValue::from_static("tower-http-client"))
         // Make client compatible with the `tower-http` layers.
         .layer(HttpClientLayer)
-        .service(reqwest::Client::new());
+        .service(client)
+        .map_err(anyhow::Error::from)
+        .boxed_clone()
+}
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    // Create a new client
+    let client = make_client(reqwest::Client::new());
     // Execute request by using this service.
     let response = client
         .execute(
