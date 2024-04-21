@@ -24,3 +24,5 @@ tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
 tower-reqwest = { version = "0.2.0", path = "../tower-reqwest" }
 anyhow = "1.0"
 wiremock = "0.6.0"
+serde_json = "1"
+http-body-util = "0.1"

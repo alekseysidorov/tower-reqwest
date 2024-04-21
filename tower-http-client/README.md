@@ -38,7 +38,7 @@ async fn main() -> anyhow::Result<()> {
             http::request::Builder::new()
                 .method(http::Method::GET)
                 .uri("http://ip.jsontest.com")
-                .body("")?,
+                .body(reqwest::Body::default())?,
         )
         .await?;
 
