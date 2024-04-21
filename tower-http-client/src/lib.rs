@@ -1,14 +1,9 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![cfg_attr(docsrs, feature(doc_auto_cfg, doc_cfg))]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+//! # Overview
+//!
+#![doc = include_utils::include_md!("README.md:description")]
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+#[cfg(feature = "util")]
+#[cfg_attr(docsrs, doc(cfg(feature = "util")))]
+pub mod util;

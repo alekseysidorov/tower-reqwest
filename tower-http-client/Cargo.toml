@@ -1,8 +1,28 @@
 [package]
 name = "tower-http-client"
-version = "0.1.0"
-edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+readme.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+
+[features]
+default = ["util"]
+util = []
 
 [dependencies]
+http = "1.0"
+include-utils = "0.2"
+reqwest = { version = "0.12" }
+tower = { version = "0.4" }
+tower-http = { version = "0.5", features = ["set-header", "util", "request-id"] }
+
+[dev-dependencies]
+anyhow = "1.0"
+http-body-util = "0.1"
+serde_json = "1"
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
+tower-reqwest = { version = "0.2.0", path = "../tower-reqwest" }
+wiremock = "0.6.0"

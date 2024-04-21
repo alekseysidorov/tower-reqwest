@@ -5,17 +5,17 @@ use std::future::Future;
 use tower::Service;
 
 /// An extension trait for Tower HTTP services with the typical client methods.
-pub trait HttpClientExt<ReqBody, RespBody>: Clone {
+pub trait HttpClientExt<ReqBody, RespBody, Err>: Clone {
     /// Executes an HTTP request.
     fn execute(
         &self,
         request: http::Request<ReqBody>,
-    ) -> impl Future<Output = crate::Result<http::Response<RespBody>>>;
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>;
 }
 
-impl<S, ReqBody, RespBody> HttpClientExt<ReqBody, RespBody> for S
+impl<S, ReqBody, RespBody, Err> HttpClientExt<ReqBody, RespBody, Err> for S
 where
-    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = crate::Error>
+    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>
         + Clone
         + Send
         + 'static,
@@ -25,7 +25,7 @@ where
     fn execute(
         &self,
         request: http::Request<ReqBody>,
-    ) -> impl Future<Output = crate::Result<http::Response<RespBody>>> {
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>> {
         self.clone().call(request)
     }
 }
@@ -36,12 +36,13 @@ mod tests {
     use reqwest::Client;
     use tower::ServiceBuilder;
     use tower_http::ServiceBuilderExt;
+    use tower_reqwest::HttpClientLayer;
     use wiremock::{
         matchers::{method, path},
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{util::HttpClientExt, HttpClientLayer};
+    use crate::util::HttpClientExt;
 
     // Check that we can use tower-http layers on top of the compatibility wrapper.
     #[tokio::test]
