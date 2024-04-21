@@ -4,21 +4,29 @@
 
 use std::{future::Future, task::Poll};
 
+use http_body_util::BodyExt;
+use hyper::body::Bytes;
 use pin_project::pin_project;
 use tower::Service;
 
-use crate::{HttpBody, HttpClientService};
+use crate::HttpClientService;
+
+type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 impl<S, ReqBody> Service<http::Request<ReqBody>> for HttpClientService<S>
 where
+    // Service
     S: Service<reqwest::Request>,
     S::Future: Send + 'static,
     S::Error: 'static,
+    // Request
+    ReqBody: hyper::body::Body<Data = Bytes> + Send + Sync + 'static,
+    ReqBody::Error: std::error::Error + Send + Sync,
+    // Response
+    http::Response<reqwest::Body>: From<S::Response>,
     crate::Error: From<S::Error>,
-    http::Response<HttpBody>: From<S::Response>,
-    HttpBody: From<ReqBody>,
 {
-    type Response = http::Response<HttpBody>;
+    type Response = http::Response<reqwest::Body>;
     type Error = crate::Error;
     type Future = ExecuteRequestFuture<S>;
 
@@ -30,13 +38,15 @@ where
     }
 
     fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
+        let req = req.map(|body| body.map_err(BoxError::from).boxed());
+
         let future = reqwest::Request::try_from(req).map(|reqw| self.0.call(reqw));
         ExecuteRequestFuture::new(future)
     }
 }
 
-#[pin_project]
 /// Future that resolves to the response or failure to connect.
+#[pin_project]
 #[derive(Debug)]
 pub struct ExecuteRequestFuture<S>
 where
@@ -77,9 +87,9 @@ impl<S> Future for ExecuteRequestFuture<S>
 where
     S: Service<reqwest::Request>,
     crate::Error: From<S::Error>,
-    http::Response<HttpBody>: From<S::Response>,
+    http::Response<reqwest::Body>: From<S::Response>,
 {
-    type Output = crate::Result<http::Response<HttpBody>>;
+    type Output = crate::Result<http::Response<reqwest::Body>>;
 
     fn poll(
         self: std::pin::Pin<&mut Self>,
@@ -163,7 +173,7 @@ mod tests {
             .method(http::Method::GET)
             .uri(format!("{mock_uri}/hello"))
             // TODO Make in easy to create requests without body.
-            .body("")?;
+            .body(http_body_util::Empty::new())?;
 
         let response = ServiceBuilder::new()
             .layer(HttpClientLayer)
