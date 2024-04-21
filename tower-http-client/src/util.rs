@@ -4,36 +4,28 @@ use std::future::Future;
 
 use tower::Service;
 
-use crate::{HttpBody, HttpResponse};
-
 /// An extension trait for Tower HTTP services with the typical client methods.
-pub trait HttpClientExt: Clone {
+pub trait HttpClientExt<ReqBody, RespBody, Err>: Clone {
     /// Executes an HTTP request.
-    fn execute<B>(
+    fn execute(
         &self,
-        request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<HttpResponse>>
-    where
-        B: Into<HttpBody>;
+        request: http::Request<ReqBody>,
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>;
 }
 
-impl<S> HttpClientExt for S
+impl<S, ReqBody, RespBody, Err> HttpClientExt<ReqBody, RespBody, Err> for S
 where
-    S: Service<http::Request<HttpBody>, Response = HttpResponse, Error = crate::Error>
+    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>
         + Clone
         + Send
         + 'static,
     S::Future: Send + 'static,
     S::Error: 'static,
 {
-    fn execute<B>(
+    fn execute(
         &self,
-        request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<HttpResponse>>
-    where
-        B: Into<HttpBody>,
-    {
-        let request = request.map(Into::into);
+        request: http::Request<ReqBody>,
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>> {
         self.clone().call(request)
     }
 }
@@ -44,12 +36,13 @@ mod tests {
     use reqwest::Client;
     use tower::ServiceBuilder;
     use tower_http::ServiceBuilderExt;
+    use tower_reqwest::HttpClientLayer;
     use wiremock::{
         matchers::{method, path},
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{util::HttpClientExt, HttpClientLayer};
+    use crate::util::HttpClientExt;
 
     // Check that we can use tower-http layers on top of the compatibility wrapper.
     #[tokio::test]
@@ -72,13 +65,14 @@ mod tests {
             .override_response_header(USER_AGENT, HeaderValue::from_static("tower-reqwest"))
             .layer(HttpClientLayer)
             .service(Client::new());
+
         let response = client
             .execute(
                 http::request::Builder::new()
                     .method(http::Method::GET)
                     .uri(format!("{mock_uri}/hello"))
                     // TODO Make in easy to create requests without body.
-                    .body("")?,
+                    .body(reqwest::Body::default())?,
             )
             .await?;
 

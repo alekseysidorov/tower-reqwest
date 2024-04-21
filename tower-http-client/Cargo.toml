@@ -1,0 +1,29 @@
+[package]
+name = "tower-http-client"
+
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+
+[features]
+default = ["util"]
+util = []
+
+[dependencies]
+http = { workspace = true }
+include-utils = { workspace = true }
+reqwest = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true, features = ["set-header", "util"] }
+
+[dev-dependencies]
+tower-reqwest = { version = "0.2.0", path = "../tower-reqwest" }
+
+anyhow = { workspace = true }
+http-body-util = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+wiremock = { workspace = true }

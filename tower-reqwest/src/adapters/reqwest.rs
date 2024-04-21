@@ -7,18 +7,17 @@ use std::{future::Future, task::Poll};
 use pin_project::pin_project;
 use tower::Service;
 
-use crate::{HttpBody, HttpClientService, HttpResponse};
+use crate::HttpClientService;
 
-impl<S, ReqBody> Service<http::Request<ReqBody>> for HttpClientService<S>
+impl<S> Service<http::Request<reqwest::Body>> for HttpClientService<S>
 where
     S: Service<reqwest::Request>,
     S::Future: Send + 'static,
     S::Error: 'static,
+    http::Response<reqwest::Body>: From<S::Response>,
     crate::Error: From<S::Error>,
-    HttpResponse: From<S::Response>,
-    HttpBody: From<ReqBody>,
 {
-    type Response = HttpResponse;
+    type Response = http::Response<reqwest::Body>;
     type Error = crate::Error;
     type Future = ExecuteRequestFuture<S>;
 
@@ -29,7 +28,7 @@ where
         Poll::Ready(Ok(()))
     }
 
-    fn call(&mut self, req: http::Request<ReqBody>) -> Self::Future {
+    fn call(&mut self, req: http::Request<reqwest::Body>) -> Self::Future {
         let future = reqwest::Request::try_from(req).map(|reqw| self.0.call(reqw));
         ExecuteRequestFuture::new(future)
     }
@@ -76,10 +75,10 @@ where
 impl<S> Future for ExecuteRequestFuture<S>
 where
     S: Service<reqwest::Request>,
+    http::Response<reqwest::Body>: From<S::Response>,
     crate::Error: From<S::Error>,
-    HttpResponse: From<S::Response>,
 {
-    type Output = crate::Result<HttpResponse>;
+    type Output = crate::Result<http::Response<reqwest::Body>>;
 
     fn poll(
         self: std::pin::Pin<&mut Self>,
@@ -87,10 +86,9 @@ where
     ) -> std::task::Poll<Self::Output> {
         let this = self.project();
         match this.inner.project() {
-            InnerProj::Future { fut } => fut
-                .poll(cx)
-                .map_ok(HttpResponse::from)
-                .map_err(crate::Error::from),
+            InnerProj::Future { fut } => {
+                fut.poll(cx).map_ok(From::from).map_err(crate::Error::from)
+            }
             InnerProj::Error { error } => {
                 let error = error.take().expect("Polled after ready");
                 Poll::Ready(Err(error))
@@ -164,12 +162,12 @@ mod tests {
             .method(http::Method::GET)
             .uri(format!("{mock_uri}/hello"))
             // TODO Make in easy to create requests without body.
-            .body("")?;
+            .body(reqwest::Body::default())?;
 
         let response = ServiceBuilder::new()
             .layer(HttpClientLayer)
             .service(client.clone())
-            .call(request.clone())
+            .call(request)
             .await?;
         assert!(response.status().is_success());
         // Try to read body
@@ -184,6 +182,11 @@ mod tests {
             .service(client)
             .boxed_clone();
         // Execute request with a several layers from the tower-http
+        let request = http::request::Builder::new()
+            .method(http::Method::GET)
+            .uri(format!("{mock_uri}/hello"))
+            // TODO Make in easy to create requests without body.
+            .body(reqwest::Body::default())?;
         let response = service.clone().call(request).await?;
 
         assert!(response.status().is_success());

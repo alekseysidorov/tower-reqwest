@@ -1,0 +1,42 @@
+[package]
+name = "tower-reqwest"
+description = "Adapter between reqwest and tower-http crates."
+
+readme = "README.md"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+
+[features]
+default = ["reqwest-middleware"]
+reqwest-middleware = ["dep:reqwest-middleware"]
+
+[dependencies]
+futures-util = { workspace = true }
+http = { workspace = true }
+include-utils = { workspace = true }
+pin-project = { workspace = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true, optional = true }
+thiserror = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+http-body-util = { workspace = true }
+pretty_assertions = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tower-http = { workspace = true, features = ["set-header", "util", "request-id"] }
+wiremock = { workspace = true }
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
