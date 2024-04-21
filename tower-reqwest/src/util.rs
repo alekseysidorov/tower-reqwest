@@ -4,36 +4,28 @@ use std::future::Future;
 
 use tower::Service;
 
-use crate::{HttpBody, HttpResponse};
-
 /// An extension trait for Tower HTTP services with the typical client methods.
-pub trait HttpClientExt: Clone {
+pub trait HttpClientExt<ReqBody, RespBody>: Clone {
     /// Executes an HTTP request.
-    fn execute<B>(
+    fn execute(
         &self,
-        request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<http::Response<HttpBody>>>
-    where
-        B: Into<HttpBody>;
+        request: http::Request<ReqBody>,
+    ) -> impl Future<Output = crate::Result<http::Response<RespBody>>>;
 }
 
-impl<S> HttpClientExt for S
+impl<S, ReqBody, RespBody> HttpClientExt<ReqBody, RespBody> for S
 where
-    S: Service<http::Request<HttpBody>, Response = HttpResponse, Error = crate::Error>
+    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = crate::Error>
         + Clone
         + Send
         + 'static,
     S::Future: Send + 'static,
     S::Error: 'static,
 {
-    fn execute<B>(
+    fn execute(
         &self,
-        request: http::Request<B>,
-    ) -> impl Future<Output = crate::Result<http::Response<HttpBody>>>
-    where
-        B: Into<HttpBody>,
-    {
-        let request = request.map(Into::into);
+        request: http::Request<ReqBody>,
+    ) -> impl Future<Output = crate::Result<http::Response<RespBody>>> {
         self.clone().call(request)
     }
 }
@@ -72,13 +64,14 @@ mod tests {
             .override_response_header(USER_AGENT, HeaderValue::from_static("tower-reqwest"))
             .layer(HttpClientLayer)
             .service(Client::new());
+
         let response = client
             .execute(
                 http::request::Builder::new()
                     .method(http::Method::GET)
                     .uri(format!("{mock_uri}/hello"))
                     // TODO Make in easy to create requests without body.
-                    .body("")?,
+                    .body(reqwest::Body::default())?,
             )
             .await?;
 

@@ -107,8 +107,7 @@ mod tests {
                 http::request::Builder::new()
                     .method(http::Method::GET)
                     .uri(format!("{mock_uri}/hello"))
-                    // TODO Make in easy to create requests without body.
-                    .body("")?,
+                    .body(reqwest::Body::default())?,
             )
             .await?;
 

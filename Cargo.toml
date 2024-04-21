@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["tower-http-client", "tower-http-client-core", "tower-reqwest"]
+members = ["tower-http-client", "tower-reqwest"]
 
 [workspace.package]
 version = "0.2.0"
