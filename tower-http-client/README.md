@@ -7,7 +7,7 @@
 
 <!-- ANCHOR: description -->
 
-WIP
+Extra Tower middlewares and utilities for HTTP clients.
 
 ## Warning
 

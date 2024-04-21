@@ -1,5 +1,6 @@
 [package]
 name = "tower-http-client"
+description = "Extra Tower middlewares and utilities for HTTP clients."
 
 readme = "README.md"
 version.workspace = true
