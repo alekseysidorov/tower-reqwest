@@ -2,7 +2,7 @@
 name = "tower-reqwest"
 description = "Adapter between reqwest and tower-http crates."
 
-readme.workspace = true
+readme = "README.md"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -1,7 +1,7 @@
 [package]
 name = "tower-http-client"
 
-readme.workspace = true
+readme = "README.md"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
