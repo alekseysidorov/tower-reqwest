@@ -7,13 +7,7 @@
 
 <!-- ANCHOR: description -->
 
-This library provides adapters to use [reqwest] client with the [tower_http]
-layers.
-
-## Warning
-
-This crate is currently in early stage of development and is not ready for
-production use.
+This library provides adapters to use [reqwest] client with the [tower_http] layers.
 
 ## Example
 
@@ -21,13 +15,13 @@ production use.
 use http::{header::USER_AGENT, HeaderValue};
 use http_body_util::BodyExt;
 use serde_json::Value;
-use tower::ServiceBuilder;
+use tower::{ServiceBuilder, Service};
 use tower_http::ServiceBuilderExt;
-use tower_reqwest::{util::HttpClientExt, HttpClientLayer};
+use tower_reqwest::HttpClientLayer;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let client = ServiceBuilder::new()
+    let mut client = ServiceBuilder::new()
         // Add some layers.
         .override_request_header(USER_AGENT, HeaderValue::from_static("tower-reqwest"))
         // Make client compatible with the `tower-http` layers.
@@ -35,7 +29,7 @@ async fn main() -> anyhow::Result<()> {
         .service(reqwest::Client::new());
     // Execute request by using this service.
     let response = client
-        .execute(
+        .call(
             http::request::Builder::new()
                 .method(http::Method::GET)
                 .uri("http://ip.jsontest.com")

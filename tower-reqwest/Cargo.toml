@@ -2,13 +2,12 @@
 name = "tower-reqwest"
 description = "Adapter between reqwest and tower-http crates."
 
+readme.workspace = true
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 documentation.workspace = true
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
 default = ["util", "reqwest-middleware"]
@@ -20,9 +19,8 @@ futures-util = "0.3"
 http = "1.0"
 hyper = { version = "1.0" }
 include-utils = "0.2"
-log = "0.4"
 pin-project = "1.0"
-reqwest = { version = "0.12", features = ["stream"] }
+reqwest = { version = "0.12" }
 reqwest-middleware = { version = "0.3.0", optional = true }
 thiserror = "1.0"
 tower = { version = "0.4" }
