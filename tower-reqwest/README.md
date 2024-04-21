@@ -7,7 +7,8 @@
 
 <!-- ANCHOR: description -->
 
-This library provides adapters to use [reqwest] client with the [tower_http] layers.
+This library provides adapters to use [reqwest] client with the [tower_http]
+layers.
 
 ## Example
 

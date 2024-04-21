@@ -11,7 +11,8 @@ WIP
 
 ## Warning
 
-This crate is currently in early stage of development and is not ready for production use.
+This crate is currently in early stage of development and is not ready for
+production use.
 
 ## Example
 
