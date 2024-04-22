@@ -65,7 +65,6 @@
           name = "ci-run-lints";
           inherit runtimeInputs;
           text = ''
-            pkg-config --libs openssl
             cargo clippy --workspace --all-features --all --all-targets
             cargo doc --workspace --all-features  --no-deps
           '';
