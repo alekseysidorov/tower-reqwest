@@ -20,6 +20,9 @@ jobs:
       - name: "Run linters"
         run: nix run .#ci-lints
 
+      - name: "Run semver checks"
+        run: nix run .#ci-semver-checks
+
   tests:
     strategy:
       matrix:
@@ -37,6 +40,3 @@ jobs:
 
       - name: "Run cargo tests"
         run: nix run .#ci-tests
-
-      - name: "Run cargo semver-checks"
-        run: nix run .#ci-semver-checks
