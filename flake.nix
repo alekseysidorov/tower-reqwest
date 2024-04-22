@@ -40,7 +40,7 @@
       runtimeInputs = with pkgs; [
         rustToolchains.stable
         cargo-nextest
-        openssl.dev
+        openssl
         pkg-config
       ]
       # Some additional libraries for the Darwin platform
@@ -72,7 +72,7 @@
 
         semver_checks = writeShellApplication {
           name = "ci-run-semver-checks";
-          runtimeInputs = with pkgs; [ cargo-semver-checks ];
+          runtimeInputs = with pkgs; [ cargo-semver-checks ] ++ runtimeInputs;
           text = ''cargo semver-checks'';
         };
 
@@ -81,8 +81,8 @@
           name = "ci-run-all";
           runtimeInputs = [ ci.lints ci.tests ];
           text = ''
-            ci-run-tests
             ci-run-lints
+            ci-run-tests
             ci-run-semver-checks
           '';
         };
