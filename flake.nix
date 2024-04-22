@@ -70,8 +70,8 @@
           '';
         };
 
-        check_semver = writeShellApplication {
-          name = "ci-check-semver";
+        semver_checks = writeShellApplication {
+          name = "ci-run-semver-checks";
           runtimeInputs = with pkgs; [ cargo-semver-checks ];
           text = ''cargo semver-checks'';
         };
@@ -83,6 +83,7 @@
           text = ''
             ci-run-tests
             ci-run-lints
+            ci-run-semver-checks
           '';
         };
       };
@@ -98,7 +99,7 @@
           ci.all
           ci.lints
           ci.tests
-          ci.check_semver
+          ci.semver_checks
         ];
       };
 
@@ -112,8 +113,8 @@
       packages = {
         ci-lints = ci.lints;
         ci-tests = ci.tests;
+        ci-semver-checks = ci.semver_checks;
         ci-all = ci.all;
-        ci-check-semver = ci.check_semver;
       };
     });
 }

@@ -18,7 +18,7 @@ jobs:
         run: nix flake check
 
       - name: "Run linters"
-        run: nix develop --command ci-run-lints
+        run: nix run .#ci-lints
 
   tests:
     strategy:
@@ -36,4 +36,7 @@ jobs:
           name: nixpkgs-cross-overlay
 
       - name: "Run cargo tests"
-        run: nix develop --command ci-run-tests
+        run: nix run .#ci-tests
+
+      - name: "Run cargo semver-checks"
+        run: nix run .#ci-semver-checks
