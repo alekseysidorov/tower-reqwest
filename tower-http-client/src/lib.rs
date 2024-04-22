@@ -5,5 +5,8 @@
 #![doc = include_utils::include_md!("README.md:description")]
 
 #[cfg(feature = "util")]
-#[cfg_attr(docsrs, doc(cfg(feature = "util")))]
-pub mod util;
+#[doc(inline)]
+pub use service_ext::ServiceExt;
+
+#[cfg(feature = "util")]
+mod service_ext;

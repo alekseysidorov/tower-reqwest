@@ -22,7 +22,7 @@ use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::ServiceBuilderExt;
-use tower_http_client::util::HttpClientExt;
+use tower_http_client::ServiceExt as ClientExt;
 use tower_reqwest::HttpClientLayer;
 
 /// Implementation agnostic HTTP client.

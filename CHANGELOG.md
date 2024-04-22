@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- `tower_http_client::util::HttpClientExt` has been replaced by the
+  `tower_http_client::ServiceExt`.
+
 ## [0.2.0] - 2024.04.21
 
 The `tower-reqwest` has been splitted into two parts:
