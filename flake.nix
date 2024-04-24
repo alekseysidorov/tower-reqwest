@@ -87,6 +87,15 @@
           '';
         };
       };
+
+      mkCommand = shell: command:
+        pkgs.writeShellApplication {
+          name = "cmd-${shell}-${command}";
+          runtimeInputs = [ pkgs.nix ];
+          text = ''nix develop ".#${shell}" --command "${command}"'';
+        };
+
+      mkCommandDefault = mkCommand "default";
     in
     {
       # for `nix fmt`
@@ -111,10 +120,16 @@
       };
 
       packages = {
-        ci-lints = ci.lints;
-        ci-tests = ci.tests;
-        ci-semver-checks = ci.semver_checks;
-        ci-all = ci.all;
+        ci-lints = mkCommandDefault "ci-run-lints";
+        ci-tests = mkCommandDefault "ci-run-tests";
+        ci-semver-checks = mkCommandDefault "ci-run-semver-checks";
+        ci-all = mkCommandDefault "ci-run-all";
+        git-install-hooks = pkgs.writeShellScriptBin "install-git-hook"
+          ''
+          echo "-> Installing pre-push hook"
+          rm "$PWD/.git/hooks/pre-push"
+          ln -sf "${ci.all}/bin/ci-run-all" "$PWD/.git/hooks/pre-push"
+          '';
       };
     });
 }
