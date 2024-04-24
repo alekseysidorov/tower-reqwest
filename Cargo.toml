@@ -3,7 +3,7 @@ resolver = "2"
 members = ["tower-http-client", "tower-reqwest"]
 
 [workspace.package]
-version = "0.2.1"
+version = "0.3.0-dev.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/alekseysidorov/tower-reqwest"
@@ -16,7 +16,9 @@ http-body-util = "0.1"
 include-utils = "0.2"
 pin-project = "1.0"
 pretty_assertions = "1.4.0"
-reqwest = { version = "0.12" }
+reqwest = { version = "0.12", default-features = false, features = [
+  "rustls-tls",
+] }
 reqwest-middleware = { version = "0.3.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

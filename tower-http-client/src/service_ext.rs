@@ -1,19 +1,19 @@
-//! Various utilities and extensions for working with Tower http clients.
-
 use std::future::Future;
 
 use tower::Service;
 
 /// An extension trait for Tower HTTP services with the typical client methods.
-pub trait HttpClientExt<ReqBody, RespBody, Err>: Clone {
+pub trait ServiceExt<ReqBody, RespBody, Err> {
     /// Executes an HTTP request.
-    fn execute(
+    fn execute<R>(
         &self,
-        request: http::Request<ReqBody>,
-    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>;
+        request: http::Request<R>,
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>
+    where
+        ReqBody: From<R>;
 }
 
-impl<S, ReqBody, RespBody, Err> HttpClientExt<ReqBody, RespBody, Err> for S
+impl<S, ReqBody, RespBody, Err> ServiceExt<ReqBody, RespBody, Err> for S
 where
     S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>
         + Clone
@@ -22,11 +22,14 @@ where
     S::Future: Send + 'static,
     S::Error: 'static,
 {
-    fn execute(
+    fn execute<R>(
         &self,
-        request: http::Request<ReqBody>,
-    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>> {
-        self.clone().call(request)
+        request: http::Request<R>,
+    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>
+    where
+        ReqBody: From<R>,
+    {
+        self.clone().call(request.map(ReqBody::from))
     }
 }
 
@@ -42,7 +45,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::util::HttpClientExt;
+    use super::ServiceExt;
 
     // Check that we can use tower-http layers on top of the compatibility wrapper.
     #[tokio::test]
@@ -71,8 +74,7 @@ mod tests {
                 http::request::Builder::new()
                     .method(http::Method::GET)
                     .uri(format!("{mock_uri}/hello"))
-                    // TODO Make in easy to create requests without body.
-                    .body(reqwest::Body::default())?,
+                    .body("")?,
             )
             .await?;
 

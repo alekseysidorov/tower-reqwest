@@ -6,6 +6,7 @@
 
 use tower::Layer;
 
+#[doc(inline)]
 pub use crate::error::Error;
 
 mod adapters;

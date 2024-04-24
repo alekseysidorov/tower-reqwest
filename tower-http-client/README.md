@@ -7,7 +7,17 @@
 
 <!-- ANCHOR: description -->
 
-Extra Tower middlewares and utilities for HTTP clients.
+This library provides middlewares and various utilities for HTTP-clients.
+
+Thus, it extends the [`tower_http`] functionality for creating HTTP clients
+using [`tower`] middlewares.
+
+At the moment, the de facto standard client library is [`reqwest`], which is
+poorly compatible with the [`tower`] services, but thanks to the
+[`tower_reqwest`] crate, it can be used with the any [`tower_http`] layers.
+
+The first goal of the project is to create a more flexible and extensible
+alternative for [`reqwest_middleware`].
 
 ## Warning
 
@@ -22,7 +32,7 @@ use http_body_util::BodyExt;
 use serde_json::Value;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::ServiceBuilderExt;
-use tower_http_client::util::HttpClientExt;
+use tower_http_client::ServiceExt as ClientExt;
 use tower_reqwest::HttpClientLayer;
 
 /// Implementation agnostic HTTP client.
@@ -66,4 +76,11 @@ async fn main() -> anyhow::Result<()> {
 }
 ```
 
+[`tower_reqwest`]: https://docs.rs/tower-reqwest
+[`reqwest_middleware`]: https://docs.rs/reqwest-middleware
+
 <!-- ANCHOR_END: description -->
+
+[`reqwest`]: https://github.com/seanmonstar/reqwest
+[`tower`]: https://github.com/tower-rs/tower
+[`tower_http`]: https://github.com/tower-rs/tower-http

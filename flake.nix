@@ -40,7 +40,7 @@
       runtimeInputs = with pkgs; [
         rustToolchains.stable
         cargo-nextest
-        openssl.dev
+        openssl
         pkg-config
       ]
       # Some additional libraries for the Darwin platform
@@ -70,9 +70,9 @@
           '';
         };
 
-        check_semver = writeShellApplication {
-          name = "ci-check-semver";
-          runtimeInputs = with pkgs; [ cargo-semver-checks ];
+        semver_checks = writeShellApplication {
+          name = "ci-run-semver-checks";
+          runtimeInputs = with pkgs; [ cargo-semver-checks ] ++ runtimeInputs;
           text = ''cargo semver-checks'';
         };
 
@@ -81,11 +81,21 @@
           name = "ci-run-all";
           runtimeInputs = [ ci.lints ci.tests ];
           text = ''
-            ci-run-tests
             ci-run-lints
+            ci-run-tests
+            ci-run-semver-checks
           '';
         };
       };
+
+      mkCommand = shell: command:
+        pkgs.writeShellApplication {
+          name = "cmd-${shell}-${command}";
+          runtimeInputs = [ pkgs.nix ];
+          text = ''nix develop ".#${shell}" --command "${command}"'';
+        };
+
+      mkCommandDefault = mkCommand "default";
     in
     {
       # for `nix fmt`
@@ -98,7 +108,7 @@
           ci.all
           ci.lints
           ci.tests
-          ci.check_semver
+          ci.semver_checks
         ];
       };
 
@@ -110,10 +120,20 @@
       };
 
       packages = {
-        ci-lints = ci.lints;
-        ci-tests = ci.tests;
-        ci-all = ci.all;
-        ci-check-semver = ci.check_semver;
+        ci-lints = mkCommandDefault "ci-run-lints";
+        ci-tests = mkCommandDefault "ci-run-tests";
+        ci-semver-checks = mkCommandDefault "ci-run-semver-checks";
+        ci-all = mkCommandDefault "ci-run-all";
+        git-install-hooks = pkgs.writeShellScriptBin "install-git-hook"
+          ''
+            echo "-> Installing pre-commit hook"
+            echo "nix flake check" >> "$PWD/.git/hooks/pre-commit"
+            chmod +x "$PWD/.git/hooks/pre-commit"
+
+            echo "-> Installing pre-push hook"
+            echo "nix run \".#ci-all\"" >> "$PWD/.git/hooks/pre-push"
+            chmod +x "$PWD/.git/hooks/pre-push"
+          '';
       };
     });
 }
