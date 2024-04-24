@@ -126,6 +126,10 @@
         ci-all = mkCommandDefault "ci-run-all";
         git-install-hooks = pkgs.writeShellScriptBin "install-git-hook"
           ''
+            echo "-> Installing pre-commit hook"
+            echo "nix flake check" >> "$PWD/.git/hooks/pre-commit"
+            chmod +x "$PWD/.git/hooks/pre-commit"
+
             echo "-> Installing pre-push hook"
             echo "nix run \".#ci-all\"" >> "$PWD/.git/hooks/pre-push"
             chmod +x "$PWD/.git/hooks/pre-push"
