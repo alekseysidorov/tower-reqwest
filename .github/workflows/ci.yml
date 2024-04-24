@@ -39,4 +39,4 @@ jobs:
           name: nixpkgs-cross-overlay
 
       - name: "Run cargo tests"
-        run: nix develop --command ci-run-semver-tests
+        run: nix develop --command ci-run-tests
