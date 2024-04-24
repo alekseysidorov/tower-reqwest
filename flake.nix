@@ -127,8 +127,8 @@
         git-install-hooks = pkgs.writeShellScriptBin "install-git-hook"
           ''
             echo "-> Installing pre-push hook"
-            rm "$PWD/.git/hooks/pre-push"
-            ln -sf "${ci.all}/bin/ci-run-all" "$PWD/.git/hooks/pre-push"
+            echo "nix run \".#ci-all\"" >> "$PWD/.git/hooks/pre-push"
+            chmod +x "$PWD/.git/hooks/pre-push"
           '';
       };
     });
