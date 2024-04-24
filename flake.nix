@@ -126,9 +126,9 @@
         ci-all = mkCommandDefault "ci-run-all";
         git-install-hooks = pkgs.writeShellScriptBin "install-git-hook"
           ''
-          echo "-> Installing pre-push hook"
-          rm "$PWD/.git/hooks/pre-push"
-          ln -sf "${ci.all}/bin/ci-run-all" "$PWD/.git/hooks/pre-push"
+            echo "-> Installing pre-push hook"
+            rm "$PWD/.git/hooks/pre-push"
+            ln -sf "${ci.all}/bin/ci-run-all" "$PWD/.git/hooks/pre-push"
           '';
       };
     });
