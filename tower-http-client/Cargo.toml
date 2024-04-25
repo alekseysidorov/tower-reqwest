@@ -14,17 +14,27 @@ default = ["util"]
 util = []
 
 [dependencies]
+bytes = { workspace = true }
 http = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
 include-utils = { workspace = true }
-reqwest = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
 tower = { workspace = true }
-tower-http = { workspace = true, features = ["set-header", "util"] }
 
 [dev-dependencies]
 tower-reqwest = { version = "0.3.0-dev.1", path = "../tower-reqwest" }
-
 anyhow = { workspace = true }
-http-body-util = { workspace = true }
-serde_json = { workspace = true }
+reqwest = { workspace = true }
 tokio = { workspace = true }
+tower-http = { workspace = true, features = ["set-header", "util"] }
 wiremock = { workspace = true }
+
+[lints]
+workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
