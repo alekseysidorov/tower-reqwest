@@ -78,9 +78,9 @@ async fn main() -> anyhow::Result<()> {
 
 [`tower_reqwest`]: https://docs.rs/tower-reqwest
 [`reqwest_middleware`]: https://docs.rs/reqwest-middleware
+[`reqwest`]: https://github.com/seanmonstar/reqwest
+[`tower_http`]: https://github.com/tower-rs/tower-http
 
 <!-- ANCHOR_END: description -->
 
-[`reqwest`]: https://github.com/seanmonstar/reqwest
 [`tower`]: https://github.com/tower-rs/tower
-[`tower_http`]: https://github.com/tower-rs/tower-http
