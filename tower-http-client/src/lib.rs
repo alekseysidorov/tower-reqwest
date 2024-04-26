@@ -4,6 +4,7 @@
 //! # Overview
 //!
 #![doc = include_utils::include_md!("README.md:description")]
+//!
 
 #[cfg(feature = "util")]
 pub use service_ext::ServiceExt;

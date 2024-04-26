@@ -9,6 +9,8 @@ use serde::de::DeserializeOwned;
 use thiserror::Error;
 
 /// Convenient wrapper for reading [`Body`] content.
+///
+/// It is useful in the most common response body reading cases.
 #[derive(Debug, Clone)]
 pub struct BodyReader<B>(B);
 
@@ -66,9 +68,9 @@ impl<B> BodyReader<B> {
     }
 
     /// Deserializes the response body as JSON.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     #[doc = include_str!("../examples/body_reader_json.rs")]
     /// ```
