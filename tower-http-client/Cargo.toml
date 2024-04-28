@@ -10,8 +10,6 @@ license.workspace = true
 repository.workspace = true
 
 [features]
-default = ["util"]
-util = []
 
 [dependencies]
 bytes = { workspace = true }
