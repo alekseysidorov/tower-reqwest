@@ -8,7 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
-- A separate feature `util` has been removed, now this functionality is always available.
+- A separate feature `util` has been removed, now this functionality is always
+  available.
 
 - Added a new module `body_reader` in the [`tower-http-client`] to simplify the
   reading the response body in the most common cases.
