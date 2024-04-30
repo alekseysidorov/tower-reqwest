@@ -56,8 +56,10 @@
           name = "ci-run-tests";
           inherit runtimeInputs;
           text = ''
-            cargo nextest run --all-features --workspace --all-targets
-            cargo test --workspace --all-features --doc
+            cargo nextest run --workspace --all-targets --no-default-features
+            cargo nextest run --workspace --all-targets --all-features
+            cargo test --workspace --doc --no-default-features
+            cargo test --workspace --doc --all-features
           '';
         };
 
@@ -65,8 +67,10 @@
           name = "ci-run-lints";
           inherit runtimeInputs;
           text = ''
-            cargo clippy --workspace --all-features --all --all-targets
-            cargo doc --workspace --all-features  --no-deps
+            cargo clippy --workspace --all --no-default-features
+            cargo clippy --workspace --all --all-targets --all-features
+            cargo doc --workspace --no-deps --no-default-features
+            cargo doc --workspace --no-deps --all-features
           '';
         };
 

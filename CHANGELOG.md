@@ -8,6 +8,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.3.0] - 2024.04.30
+
+- Added an `ResponseExt` extension trait.
+
+- Added a `json` feature to enable reading and writing JSON bodies in requests
+  and responses.
+
+- Added a `request` module with the useful utilities like `ClientRequest` for
+  constructing HTTP requests.
+
+- A separate feature `util` has been removed, now this functionality is always
+  available.
+
 - Added a new module `body_reader` in the [`tower-http-client`] to simplify the
   reading the response body in the most common cases.
 

@@ -9,10 +9,6 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
-[features]
-default = ["util"]
-util = []
-
 [dependencies]
 bytes = { workspace = true }
 http = { workspace = true }
@@ -20,7 +16,7 @@ http-body = { workspace = true }
 http-body-util = { workspace = true }
 include-utils = { workspace = true }
 serde = { workspace = true }
-serde_json = { workspace = true }
+serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true }
 tower = { workspace = true }
 
@@ -29,8 +25,12 @@ anyhow = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
 tower-http = { workspace = true, features = ["set-header", "util"] }
-tower-reqwest = { version = "0.3.0-dev.1", path = "../tower-reqwest" }
+tower-reqwest = { version = "0.3.0", path = "../tower-reqwest" }
 wiremock = { workspace = true }
+
+[features]
+default = ["json"]
+json = ["dep:serde_json"]
 
 [lints]
 workspace = true
