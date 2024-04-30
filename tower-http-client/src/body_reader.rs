@@ -106,6 +106,7 @@ impl<B> BodyReader<B> {
     /// }    
     /// ```
     #[cfg(feature = "json")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
     pub async fn json<T>(self) -> Result<T, BodyReaderError<B::Error, serde_json::Error>>
     where
         T: serde::de::DeserializeOwned,

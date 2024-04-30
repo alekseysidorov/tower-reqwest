@@ -114,7 +114,7 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
         self.builder.extensions_mut()
     }
 
-    /// Sets an HTTP body for this request.
+    /// Sets a body for this request.
     ///
     /// Unlike the [`http::request::Builder`] this function doesn't consume builder.
     /// This allows to override the request body.
@@ -128,6 +128,31 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
             body: body.into(),
             _phantom: PhantomData,
         }
+    }
+
+    /// Sets a JSON body for this request.
+    ///
+    /// Additionally this method adds a `CONTENT_TYPE` header for JSON body.
+    /// If you decide to override the request body, keep this in mind.
+    ///
+    /// # Errors
+    ///
+    /// If the given value's implementation of [`serde::Serialize`] decides to fail.
+    #[cfg(feature = "json")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
+    pub fn json<T: serde::Serialize + ?Sized>(
+        mut self,
+        value: &T,
+    ) -> Result<ClientRequest<'a, C, Err, bytes::Bytes, RespBody>, serde_json::Error> {
+        use http::header::CONTENT_TYPE;
+
+        let bytes = bytes::Bytes::from(serde_json::to_vec(value)?);
+        if let Some(headers) = self.headers_mut() {
+            if !headers.contains_key(CONTENT_TYPE) {
+                headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+            }
+        }
+        Ok(self.body(bytes))
     }
 
     /// Consumes this builder and returns a constructed request.
@@ -147,17 +172,18 @@ pub trait Captures<U> {}
 
 impl<T: ?Sized, U> Captures<U> for T {}
 
-impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
-where
-    C: ServiceExt<ReqBody, RespBody, Err>,
-{
+impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody> {
     /// Constructs the request and sends it to the target URI.
-    pub fn send(
+    pub fn send<R>(
         self,
     ) -> Result<
         impl Future<Output = Result<http::Response<RespBody>, Err>> + Captures<&'a ()>,
         http::Error,
-    > {
+    >
+    where
+        C: ServiceExt<R, RespBody, Err>,
+        R: From<ReqBody>,
+    {
         let request = self.builder.body(self.body)?;
         Ok(self.client.execute(request))
     }
