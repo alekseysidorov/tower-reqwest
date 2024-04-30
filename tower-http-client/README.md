@@ -26,13 +26,13 @@ production use.
 
 ## Example
 
+<!-- ANCHOR: example -->
+
 ```rust
 use http::{header::USER_AGENT, HeaderValue};
-use http_body_util::BodyExt;
-use serde_json::Value;
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::ServiceBuilderExt;
-use tower_http_client::ServiceExt as ClientExt;
+use tower_http_client::{ServiceExt as _, ResponseExt as _};
 use tower_reqwest::HttpClientLayer;
 
 /// Implementation agnostic HTTP client.
@@ -60,21 +60,18 @@ async fn main() -> anyhow::Result<()> {
     let client = make_client(reqwest::Client::new());
     // Execute request by using this service.
     let response = client
-        .execute(
-            http::request::Builder::new()
-                .method(http::Method::GET)
-                .uri("http://ip.jsontest.com")
-                .body(reqwest::Body::default())?,
-        )
+        .get("http://ip.jsontest.com")
+        .send()?
         .await?;
 
-    let bytes = response.into_body().collect().await?.to_bytes();
-    let value: Value = serde_json::from_slice(&bytes)?;
-    println!("{value:#?}");
+    let text = response.body_reader().utf8().await?;
+    println!("{text}");
 
     Ok(())
 }
 ```
+
+<!-- ANCHOR_END: example -->
 
 [`tower_reqwest`]: https://docs.rs/tower-reqwest
 [`reqwest_middleware`]: https://docs.rs/reqwest-middleware

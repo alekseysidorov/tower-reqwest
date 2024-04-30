@@ -1,8 +1,8 @@
-use http::{header::USER_AGENT, HeaderValue};
+use http::{header::USER_AGENT, HeaderValue, Method};
 use reqwest::Client;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
-use tower_http_client::ServiceExt as _;
+use tower_http_client::ServiceExt;
 use tower_reqwest::HttpClientLayer;
 use wiremock::{
     matchers::{method, path},
@@ -66,6 +66,41 @@ async fn test_service_ext_get() -> anyhow::Result<()> {
 
     let response = client.get(format!("{mock_uri}/hello")).send()?.await?;
     assert!(response.status().is_success());
+
+    Ok(())
+}
+
+// Check that client request builder uses proper methods.
+#[test]
+fn test_service_ext_request_builder_methods() -> anyhow::Result<()> {
+    let fake_client = ServiceBuilder::new()
+        .layer(HttpClientLayer)
+        .service(Client::new());
+
+    assert_eq!(
+        fake_client.get("http://localhost").build()?.method(),
+        Method::GET
+    );
+    assert_eq!(
+        fake_client.post("http://localhost").build()?.method(),
+        Method::POST
+    );
+    assert_eq!(
+        fake_client.put("http://localhost").build()?.method(),
+        Method::PUT
+    );
+    assert_eq!(
+        fake_client.patch("http://localhost").build()?.method(),
+        Method::PATCH
+    );
+    assert_eq!(
+        fake_client.delete("http://localhost").build()?.method(),
+        Method::DELETE
+    );
+    assert_eq!(
+        fake_client.head("http://localhost").build()?.method(),
+        Method::HEAD
+    );
 
     Ok(())
 }

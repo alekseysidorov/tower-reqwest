@@ -6,11 +6,6 @@ use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version}
 
 use crate::ServiceExt;
 
-#[doc(hidden)]
-pub trait Captures<U> {}
-
-impl<T: ?Sized, U> Captures<U> for T {}
-
 /// An [`http::Request`] builder.
 ///
 /// Generally, this builder copies the behavior of the [`http::request::Builder`],
@@ -144,6 +139,13 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
         self.builder.body(self.body)
     }
 }
+
+/// Workaround for impl trait lifetimes capturing rules:
+/// https://github.com/rust-lang/rust/issues/34511#issuecomment-373423999
+#[doc(hidden)]
+pub trait Captures<U> {}
+
+impl<T: ?Sized, U> Captures<U> for T {}
 
 impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
 where
