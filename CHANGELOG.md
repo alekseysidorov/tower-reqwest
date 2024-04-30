@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.3.0] - 2024.04.30
+
+- Added an `ResponseExt` extension trait.
+
 - Added a `json` feature to enable reading and writing JSON bodies in requests
   and responses.
 
