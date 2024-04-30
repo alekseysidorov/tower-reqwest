@@ -13,7 +13,7 @@ impl<T: ?Sized, U> Captures<U> for T {}
 
 /// An [`http::Request`] builder.
 ///
-/// In general, this builder copies the behavior of the [`http::request::Builder`],
+/// Generally, this builder copies the behavior of the [`http::request::Builder`],
 /// but unlike it, this builder contains a reference to the client and is able to send a
 /// constructed request. Also, this builder borrows most useful methods from the [`reqwest`] one.
 ///
