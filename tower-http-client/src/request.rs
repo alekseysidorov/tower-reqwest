@@ -1,7 +1,8 @@
-use std::{future::Future, marker::PhantomData};
+//! Useful utilities for constructing HTTP requests.
 
-use bytes::Bytes;
-use http::{Method, Uri, Version};
+use std::{any::Any, future::Future, marker::PhantomData};
+
+use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version};
 
 use crate::ServiceExt;
 
@@ -76,7 +77,52 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
         self
     }
 
+    /// Appends a header to this request.
+    ///
+    /// This function will append the provided key/value as a header to the
+    /// internal [`HeaderMap`] being constructed.  Essentially this is
+    /// equivalent to calling [`HeaderMap::append`].
+    #[must_use]
+    pub fn header<K, V>(mut self, key: K, value: V) -> Self
+    where
+        HeaderName: TryFrom<K>,
+        HeaderValue: TryFrom<V>,
+        <HeaderName as TryFrom<K>>::Error: Into<http::Error>,
+        <HeaderValue as TryFrom<V>>::Error: Into<http::Error>,
+    {
+        self.builder = self.builder.header(key, value);
+        self
+    }
+
+    /// Returns a mutable reference to headers of this request builder.
+    ///
+    /// If builder contains error returns `None`.
+    pub fn headers_mut(&mut self) -> Option<&mut HeaderMap<HeaderValue>> {
+        self.builder.headers_mut()
+    }
+
+    /// Adds an extension to this builder.
+    #[must_use]
+    pub fn extension<T>(mut self, extension: T) -> Self
+    where
+        T: Clone + Any + Send + Sync + 'static,
+    {
+        self.builder = self.builder.extension(extension);
+        self
+    }
+
+    /// Returns a mutable reference to the extensions of this request builder.
+    ///
+    /// If builder contains error returns `None`.
+    #[must_use]
+    pub fn extensions_mut(&mut self) -> Option<&mut Extensions> {
+        self.builder.extensions_mut()
+    }
+
     /// Sets an HTTP body for this request.
+    ///
+    /// Unlike the [`http::request::Builder`] this function doesn't consume builder.
+    /// This allows to override the request body.
     pub fn body<NewReqBody>(
         self,
         body: impl Into<NewReqBody>,
@@ -90,20 +136,26 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
     }
 
     /// Consumes this builder and returns a constructed request.
+    ///
+    /// # Errors
+    ///
+    /// If erroneous data was passed during the query building process.
     pub fn build(self) -> Result<http::Request<ReqBody>, http::Error> {
         self.builder.body(self.body)
     }
+}
 
+impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
+where
+    C: ServiceExt<ReqBody, RespBody, Err>,
+{
     /// Constructs the request and sends it to the target URI.
     pub fn send(
         self,
     ) -> Result<
         impl Future<Output = Result<http::Response<RespBody>, Err>> + Captures<&'a ()>,
         http::Error,
-    >
-    where
-        C: ServiceExt<ReqBody, RespBody, Err>,
-    {
+    > {
         let request = self.builder.body(self.body)?;
         Ok(self.client.execute(request))
     }

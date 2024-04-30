@@ -5,7 +5,6 @@ use std::string::FromUtf8Error;
 use bytes::{Buf, Bytes};
 use http_body::Body;
 use http_body_util::BodyExt;
-use serde::de::DeserializeOwned;
 use thiserror::Error;
 
 /// Convenient wrapper for reading [`Body`] content.
@@ -35,7 +34,17 @@ impl<B> BodyReader<B> {
     /// # Example
     ///
     /// ```
-    #[doc = include_str!("../examples/body_reader_bytes.rs")]
+    /// use http_body_util::Full;
+    /// use tower_http_client::body_reader::BodyReader;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let body = Full::new("Hello world".as_bytes());
+    ///     let content = BodyReader::new(body).bytes().await?;
+    ///
+    ///     assert_eq!(content, "Hello world");
+    ///     Ok(())
+    /// }
     /// ```
     pub async fn bytes(self) -> Result<Bytes, B::Error>
     where
@@ -56,7 +65,17 @@ impl<B> BodyReader<B> {
     /// # Example
     ///
     /// ```
-    #[doc = include_str!("../examples/body_reader_utf8.rs")]
+    /// use http_body_util::Full;
+    /// use tower_http_client::body_reader::BodyReader;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let body = Full::new("Hello world".as_bytes());
+    ///     let content = BodyReader::new(body).utf8().await?;
+    ///
+    ///     assert_eq!(content, "Hello world");
+    ///     Ok(())
+    /// }    
     /// ```
     pub async fn utf8(self) -> Result<String, BodyReaderError<B::Error, FromUtf8Error>>
     where
@@ -72,11 +91,24 @@ impl<B> BodyReader<B> {
     /// # Examples
     ///
     /// ```
-    #[doc = include_str!("../examples/body_reader_json.rs")]
+    /// use http_body_util::Full;
+    /// use serde_json::{json, Value};
+    /// use tower_http_client::body_reader::BodyReader;
+    ///
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let data = serde_json::to_vec(&json!({ "id": 1234 })).unwrap();
+    ///     let body = Full::new(data.as_ref());
+    ///     let content: Value = BodyReader::new(body).json().await?;
+    ///
+    ///     assert_eq!(content["id"], 1234);
+    ///     Ok(())
+    /// }    
     /// ```
+    #[cfg(feature = "json")]
     pub async fn json<T>(self) -> Result<T, BodyReaderError<B::Error, serde_json::Error>>
     where
-        T: DeserializeOwned,
+        T: serde::de::DeserializeOwned,
         B: Body,
         B::Data: Buf,
     {
