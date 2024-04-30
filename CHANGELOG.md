@@ -11,8 +11,8 @@ and this project adheres to
 - Added a `json` feature to enable reading and writing JSON bodies in requests
   and responses.
 
-- Added a `request` module with the useful utilities for constructing HTTP
-  requests.
+- Added a `request` module with the useful utilities like `ClientRequest` for
+  constructing HTTP requests.
 
 - A separate feature `util` has been removed, now this functionality is always
   available.
