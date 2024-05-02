@@ -1,4 +1,4 @@
-//! Adapters for various client types
+//! Adapters for various clients
 
 mod reqwest;
 #[cfg(feature = "reqwest-middleware")]

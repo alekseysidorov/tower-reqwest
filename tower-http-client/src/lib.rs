@@ -13,6 +13,8 @@ use request::ClientRequest;
 pub use tower::BoxError;
 use tower::Service;
 
+#[cfg(feature = "reqwest")]
+pub mod adapters;
 pub mod body_reader;
 pub mod request;
 

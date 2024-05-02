@@ -10,6 +10,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+tower-reqwest = { version = "0.3.1", path = "../tower-reqwest", optional = true }
+
 bytes = { workspace = true }
 http = { workspace = true }
 http-body = { workspace = true }
@@ -21,16 +23,19 @@ thiserror = { workspace = true }
 tower = { workspace = true }
 
 [dev-dependencies]
+tower-reqwest = { version = "0.3.0", path = "../tower-reqwest" }
+
 anyhow = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
 tower-http = { workspace = true, features = ["set-header", "util"] }
-tower-reqwest = { version = "0.3.0", path = "../tower-reqwest" }
 wiremock = { workspace = true }
 
 [features]
 default = ["json"]
 json = ["dep:serde_json"]
+reqwest = ["dep:tower-reqwest"]
+reqwest-middleware = ["tower-reqwest?/reqwest-middleware"]
 
 [lints]
 workspace = true

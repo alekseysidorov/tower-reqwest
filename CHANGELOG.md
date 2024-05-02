@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Added a `reqwest` and `reqwest-middleware` features to the `tower-http-client`
+  crate.
+
 ## [0.3.0] - 2024.04.30
 
 - Added an `ResponseExt` extension trait.

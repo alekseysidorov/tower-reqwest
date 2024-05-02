@@ -10,7 +10,7 @@ license.workspace = true
 repository.workspace = true
 
 [features]
-default = ["reqwest-middleware"]
+default = []
 reqwest-middleware = ["dep:reqwest-middleware"]
 
 [dependencies]
