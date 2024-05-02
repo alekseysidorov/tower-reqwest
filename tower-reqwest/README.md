@@ -12,6 +12,8 @@ layers.
 
 ## Example
 
+<!-- ANCHOR: example -->
+
 ```rust
 use http::{header::USER_AGENT, HeaderValue};
 use http_body_util::BodyExt;
@@ -45,6 +47,8 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 ```
+
+<!-- ANCHOR_END: example -->
 
 <!-- ANCHOR_END: description -->
 

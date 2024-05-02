@@ -27,6 +27,11 @@ impl<S> HttpClientService<S> {
 }
 
 /// Layer that creates [`HttpClientService`] from the inner service.
+///
+/// # Examples
+///
+#[doc = include_utils::include_md!("README.md:description")]
+///
 #[derive(Debug, Clone, Copy)]
 pub struct HttpClientLayer;
 
