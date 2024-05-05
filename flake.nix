@@ -25,6 +25,7 @@
           rust-overlay.overlays.default
           (final: prev: {
             rustToolchains = {
+              msrv = prev.rust-bin.stable."1.75.0".default;
               stable = prev.rust-bin.stable.latest.default.override {
                 extensions = [
                   "rust-src"
@@ -38,7 +39,6 @@
       };
       # Setup runtime dependencies
       runtimeInputs = with pkgs; [
-        rustToolchains.stable
         cargo-nextest
         openssl
         pkg-config
@@ -54,7 +54,7 @@
       ci = with pkgs; {
         tests = writeShellApplication {
           name = "ci-run-tests";
-          inherit runtimeInputs;
+          runtimeInputs = with pkgs; [ rustToolchains.msrv ] ++ runtimeInputs;
           text = ''
             cargo nextest run --workspace --all-targets --no-default-features
             cargo nextest run --workspace --all-targets --all-features
@@ -65,7 +65,7 @@
 
         lints = writeShellApplication {
           name = "ci-run-lints";
-          inherit runtimeInputs;
+          runtimeInputs = with pkgs; [ rustToolchains.stable ] ++ runtimeInputs;
           text = ''
             cargo clippy --workspace --all --no-default-features
             cargo clippy --workspace --all --all-targets --all-features
@@ -76,7 +76,10 @@
 
         semver_checks = writeShellApplication {
           name = "ci-run-semver-checks";
-          runtimeInputs = with pkgs; [ cargo-semver-checks ] ++ runtimeInputs;
+          runtimeInputs = with pkgs; [
+            rustToolchains.stable
+            cargo-semver-checks
+          ] ++ runtimeInputs;
           text = ''cargo semver-checks'';
         };
 
@@ -108,7 +111,8 @@
       checks.formatting = treefmt.check self;
 
       devShells.default = pkgs.mkShell {
-        nativeBuildInputs = runtimeInputs ++ [
+        nativeBuildInputs = with pkgs; runtimeInputs ++ [
+          rustToolchains.stable
           ci.all
           ci.lints
           ci.tests
