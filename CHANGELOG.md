@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.3.2] - 2024.05.05
+
+- Added more information about crates.
+
+- The minimum supported Rust version is set to 1.75.
+
+## [0.3.1] - 2024.05.03
+
 - Added a `reqwest` and `reqwest-middleware` features to the `tower-http-client`
   crate.
 
