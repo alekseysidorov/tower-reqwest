@@ -56,7 +56,6 @@
           name = "ci-run-tests";
           runtimeInputs = with pkgs; [ rustToolchains.msrv ] ++ runtimeInputs;
           text = ''
-            cargo --version
             cargo nextest run --workspace --all-targets --no-default-features
             cargo nextest run --workspace --all-targets --all-features
             cargo test --workspace --doc --no-default-features
@@ -68,7 +67,6 @@
           name = "ci-run-lints";
           runtimeInputs = with pkgs; [ rustToolchains.stable ] ++ runtimeInputs;
           text = ''
-            cargo --version
             cargo clippy --workspace --all --no-default-features
             cargo clippy --workspace --all --all-targets --all-features
             cargo doc --workspace --no-deps --no-default-features
