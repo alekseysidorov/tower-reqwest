@@ -29,8 +29,10 @@ tower = { workspace = true }
 tower-reqwest = { version = "0.3.2", path = "../tower-reqwest" }
 
 anyhow = { workspace = true }
+futures-util = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
+tower = { workspace = true, features = ["buffer", "limit"] }
 tower-http = { workspace = true, features = ["set-header", "util"] }
 wiremock = { workspace = true }
 
@@ -39,6 +41,10 @@ default = ["json"]
 json = ["dep:serde_json"]
 reqwest = ["dep:tower-reqwest"]
 reqwest-middleware = ["tower-reqwest?/reqwest-middleware"]
+
+[[example]]
+name = "rate_limiter"
+required-features = ["reqwest"]
 
 [lints]
 workspace = true

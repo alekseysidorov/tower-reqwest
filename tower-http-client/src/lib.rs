@@ -11,7 +11,7 @@ use std::future::Future;
 use http::{Method, Uri};
 use request::ClientRequest;
 pub use tower::BoxError;
-use tower::Service;
+use tower::{Service, ServiceExt as _};
 
 #[cfg(feature = "reqwest")]
 pub mod adapters;
@@ -125,7 +125,11 @@ where
     where
         ReqBody: From<R>,
     {
-        self.clone().call(request.map(ReqBody::from))
+        let mut service = self.clone();
+        async move {
+            service.ready().await?;
+            service.call(request.map(ReqBody::from)).await
+        }
     }
 }
 
