@@ -5,6 +5,12 @@
 //!
 #![doc = include_utils::include_md!("README.md:description")]
 //!
+//! An example of multi-threaded concurrent requests sending routine with the requests rate limit.
+//!
+//! ```rust
+#![doc = include_str!("../examples/rate_limiter.rs")]
+//! ```
+//!
 
 use std::future::Future;
 
@@ -24,9 +30,9 @@ pub mod request;
 ///
 /// # Examples
 ///
-/// ```rust
-#[doc = include_str!("../examples/rate_limiter.rs")]
-/// ```
+/// Creating a client and reading the response body using this trait.
+///
+#[doc = include_utils::include_md!("README.md:example")]
 ///
 /// [`reqwest::Client`]: https://docs.rs/reqwest/latest/reqwest/struct.Client.html
 pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {

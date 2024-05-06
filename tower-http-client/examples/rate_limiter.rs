@@ -1,5 +1,3 @@
-//! An example of multi-threaded concurrent requests sending routine with the requests rate limit.
-
 use std::time::Duration;
 
 use http::{Request, Response};

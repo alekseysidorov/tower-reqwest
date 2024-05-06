@@ -3,8 +3,8 @@ name = "tower-reqwest"
 description = "Adapter between reqwest and tower-http crates."
 readme = "README.md"
 documentation = "https://docs.rs/crate/tower-reqwest"
+version = "0.3.2"
 
-version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
