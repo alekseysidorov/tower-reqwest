@@ -3,6 +3,7 @@
 use std::{any::Any, future::Future, marker::PhantomData};
 
 use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version};
+use tower::Service;
 
 use crate::ServiceExt;
 
@@ -14,21 +15,21 @@ use crate::ServiceExt;
 ///
 /// [`reqwest`]: https://docs.rs/reqwest/latest/reqwest/struct.RequestBuilder.html
 #[derive(Debug)]
-pub struct ClientRequest<'a, C, Err, ReqBody, RespBody> {
-    client: &'a C,
+pub struct ClientRequest<'a, S, Err, ReqBody, RespBody> {
+    service: &'a mut S,
     builder: http::request::Builder,
     body: ReqBody,
     _phantom: PhantomData<(Err, RespBody)>,
 }
 
-impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
+impl<'a, S, Err, ReqBody, RespBody> ClientRequest<'a, S, Err, ReqBody, RespBody>
 where
     ReqBody: Default,
 {
     /// Creates a client request builder.
-    pub fn builder(client: &'a C) -> Self {
+    pub fn builder(service: &'a mut S) -> Self {
         Self {
-            client,
+            service,
             builder: http::Request::builder(),
             body: ReqBody::default(),
             _phantom: PhantomData,
@@ -36,7 +37,7 @@ where
     }
 }
 
-impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody> {
+impl<'a, S, Err, ReqBody, RespBody> ClientRequest<'a, S, Err, ReqBody, RespBody> {
     /// Sets the HTTP method for this request.
     ///
     /// By default this is `GET`.
@@ -121,9 +122,9 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
     pub fn body<NewReqBody>(
         self,
         body: impl Into<NewReqBody>,
-    ) -> ClientRequest<'a, C, Err, NewReqBody, RespBody> {
+    ) -> ClientRequest<'a, S, Err, NewReqBody, RespBody> {
         ClientRequest {
-            client: self.client,
+            service: self.service,
             builder: self.builder,
             body: body.into(),
             _phantom: PhantomData,
@@ -143,7 +144,7 @@ impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody>
     pub fn json<T: serde::Serialize + ?Sized>(
         mut self,
         value: &T,
-    ) -> Result<ClientRequest<'a, C, Err, bytes::Bytes, RespBody>, serde_json::Error> {
+    ) -> Result<ClientRequest<'a, S, Err, bytes::Bytes, RespBody>, serde_json::Error> {
         use http::header::CONTENT_TYPE;
 
         let bytes = bytes::Bytes::from(serde_json::to_vec(value)?);
@@ -172,19 +173,21 @@ pub trait Captures<U> {}
 
 impl<T: ?Sized, U> Captures<U> for T {}
 
-impl<'a, C, Err, ReqBody, RespBody> ClientRequest<'a, C, Err, ReqBody, RespBody> {
+impl<'a, S, Err, R, RespBody> ClientRequest<'a, S, Err, R, RespBody> {
     /// Constructs the request and sends it to the target URI.
-    pub fn send<R>(
+    pub fn send<ReqBody>(
         self,
     ) -> Result<
         impl Future<Output = Result<http::Response<RespBody>, Err>> + Captures<&'a ()>,
         http::Error,
     >
     where
-        C: ServiceExt<R, RespBody, Err>,
-        R: From<ReqBody>,
+        S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>,
+        S::Future: Send + 'static,
+        S::Error: 'static,
+        ReqBody: From<R>,
     {
         let request = self.builder.body(self.body)?;
-        Ok(self.client.execute(request))
+        Ok(self.service.execute(request))
     }
 }

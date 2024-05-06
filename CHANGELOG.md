@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Added a `[rate-limiter](tower-http-client/examples/rate_limiter.rs) example.
+
+- **breaking:** Changed `ServiceBuilder::execute` signature to be more
+  compatible with the `Service::call` method.
+
 ## [0.3.2] - 2024.05.05
 
 - Added more information about crates.

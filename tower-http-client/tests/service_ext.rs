@@ -14,7 +14,7 @@ mod utils;
 // Check that client request builder uses proper methods.
 #[test]
 fn test_service_ext_request_builder_methods() -> anyhow::Result<()> {
-    let fake_client = ServiceBuilder::new()
+    let mut fake_client = ServiceBuilder::new()
         .layer(HttpClientLayer)
         .service(Client::new());
 
@@ -65,6 +65,7 @@ async fn test_service_ext_execute() -> anyhow::Result<()> {
         .service(Client::new());
 
     let response = client
+        .clone()
         .execute(
             http::request::Builder::new()
                 .method(http::Method::GET)
@@ -98,7 +99,11 @@ async fn test_service_ext_get() -> anyhow::Result<()> {
         .layer(HttpClientLayer)
         .service(Client::new());
 
-    let response = client.get(format!("{mock_uri}/hello")).send()?.await?;
+    let response = client
+        .clone()
+        .get(format!("{mock_uri}/hello"))
+        .send()?
+        .await?;
     assert!(response.status().is_success());
 
     Ok(())
@@ -145,6 +150,7 @@ async fn test_service_ext_put_json() -> anyhow::Result<()> {
         .service(Client::new());
 
     let response = client
+        .clone()
         .put(format!("{mock_uri}/hello"))
         .json(&data)?
         .send()?
