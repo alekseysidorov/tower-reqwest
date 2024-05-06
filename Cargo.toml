@@ -4,10 +4,14 @@ members = ["tower-http-client", "tower-reqwest"]
 
 [workspace.package]
 edition = "2021"
+categories = [
+  "asynchronous",
+  "network-programming",
+  "web-programming::http-client",
+]
+keywords = ["io", "async", "futures", "service", "http"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/alekseysidorov/tower-reqwest"
-categories = ["asynchronous", "network-programming", "web-programming"]
-keywords = ["io", "async", "futures", "service", "http"]
 rust-version = "1.75"
 
 [workspace.dependencies]
