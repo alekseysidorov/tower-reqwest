@@ -54,8 +54,8 @@ async fn main() -> anyhow::Result<()> {
         host: mock_uri,
         client: ServiceBuilder::new()
             // Add some layers.
-            .buffer(1000)
-            .rate_limit(5, Duration::from_secs(1))
+            .buffer(64)
+            .rate_limit(2, Duration::from_secs(1))
             .concurrency_limit(5)
             // Make client compatible with the `tower-http` layers.
             .layer(HttpClientLayer)

@@ -37,7 +37,7 @@ tower-http = { workspace = true, features = ["set-header", "util"] }
 wiremock = { workspace = true }
 
 [features]
-default = ["json"]
+default = ["json", "reqwest"]
 json = ["dep:serde_json"]
 reqwest = ["dep:tower-reqwest"]
 reqwest-middleware = ["tower-reqwest?/reqwest-middleware"]
