@@ -2,7 +2,7 @@ include = ["**/*.toml"]
 
 [[rule]]
 include = ["**/Cargo.toml"]
-keys = ["dependencies", "*-dependencies"]
+keys = ["dependencies", "*-dependencies", "members", "lints"]
 
 [rule.formatting]
 reorder_keys = true

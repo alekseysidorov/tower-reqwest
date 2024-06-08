@@ -19,12 +19,9 @@ poorly compatible with the [`tower`] services, but thanks to the
 The first goal of the project is to create a more flexible and extensible
 alternative for [`reqwest_middleware`].
 
-## Warning
+## Examples
 
-This crate is currently in early stage of development and is not ready for
-production use.
-
-## Example
+Simple client usage with layers from the [`tower_http`].
 
 <!-- ANCHOR: example -->
 
@@ -60,6 +57,7 @@ async fn main() -> anyhow::Result<()> {
     let client = make_client(reqwest::Client::new());
     // Execute request by using this service.
     let response = client
+        .clone()
         .get("http://ip.jsontest.com")
         .send()?
         .await?;

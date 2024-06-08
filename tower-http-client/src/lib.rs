@@ -5,13 +5,19 @@
 //!
 #![doc = include_utils::include_md!("README.md:description")]
 //!
+//! An example of multi-threaded concurrent requests sending routine with the requests rate limit.
+//!
+//! ```rust
+#![doc = include_str!("../examples/rate_limiter.rs")]
+//! ```
+//!
 
 use std::future::Future;
 
 use http::{Method, Uri};
 use request::ClientRequest;
 pub use tower::BoxError;
-use tower::Service;
+use tower::{Service, ServiceExt as _};
 
 #[cfg(feature = "reqwest")]
 pub mod adapters;
@@ -32,14 +38,18 @@ pub mod request;
 pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     /// Executes an HTTP request.
     fn execute<R>(
-        &self,
+        &mut self,
         request: http::Request<R>,
     ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>
     where
         ReqBody: From<R>;
 
     /// Starts building a request with the given method and URI.
-    fn request<U>(&self, method: Method, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn request<U>(
+        &mut self,
+        method: Method,
+        uri: U,
+    ) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -49,7 +59,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `GET` request to a given URL.
-    fn get<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn get<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -59,7 +69,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `PUT` request to a given URL.
-    fn put<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn put<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -69,7 +79,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `POST` request to a given URL.
-    fn post<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn post<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -79,7 +89,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `PATCH` request to a given URL.
-    fn patch<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn patch<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -89,7 +99,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `DELETE` request to a given URL.
-    fn delete<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn delete<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -99,7 +109,7 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     }
 
     /// Convenience method to make a `HEAD` request to a given URL.
-    fn head<U>(&self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
+    fn head<U>(&mut self, uri: U) -> ClientRequest<'_, Self, Err, ReqBody, RespBody>
     where
         ReqBody: Default,
         Uri: TryFrom<U>,
@@ -111,21 +121,21 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
 
 impl<S, ReqBody, RespBody, Err> ServiceExt<ReqBody, RespBody, Err> for S
 where
-    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>
-        + Clone
-        + Send
-        + 'static,
+    S: Service<http::Request<ReqBody>, Response = http::Response<RespBody>, Error = Err>,
     S::Future: Send + 'static,
     S::Error: 'static,
 {
-    fn execute<R>(
-        &self,
+    async fn execute<R>(
+        &mut self,
         request: http::Request<R>,
-    ) -> impl Future<Output = Result<http::Response<RespBody>, Err>>
+    ) -> Result<http::Response<RespBody>, Err>
     where
         ReqBody: From<R>,
     {
-        self.clone().call(request.map(ReqBody::from))
+        // Wait until service will be ready to executing requests. It's important for buffered services.
+        self.ready().await?;
+        // And then execute the given request.
+        self.call(request.map(ReqBody::from)).await
     }
 }
 
@@ -142,7 +152,7 @@ pub trait ResponseExt<T>: Sized {
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {
     ///     // Create a new client
-    ///     let client = HttpClientService::new(reqwest::Client::new());
+    ///     let mut client = HttpClientService::new(reqwest::Client::new());
     ///     // Execute request by using this service.
     ///     let response = client.get("http://ip.jsontest.com").send()?.await?;
     ///
