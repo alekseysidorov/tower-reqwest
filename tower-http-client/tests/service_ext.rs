@@ -1,8 +1,8 @@
 use http::{header::USER_AGENT, HeaderValue, Method};
 use reqwest::Client;
-use tower::ServiceBuilder;
+use tower::{ServiceBuilder, ServiceExt};
 use tower_http::ServiceBuilderExt;
-use tower_http_client::ServiceExt;
+use tower_http_client::ServiceExt as _;
 use tower_reqwest::HttpClientLayer;
 use wiremock::{
     matchers::{method, path},
@@ -14,9 +14,7 @@ mod utils;
 // Check that client request builder uses proper methods.
 #[test]
 fn test_service_ext_request_builder_methods() -> anyhow::Result<()> {
-    let mut fake_client = ServiceBuilder::new()
-        .layer(HttpClientLayer)
-        .service(Client::new());
+    let fake_client = ServiceBuilder::new().service(Client::new());
 
     assert_eq!(
         fake_client.get("http://localhost").build()?.method(),
@@ -95,9 +93,7 @@ async fn test_service_ext_get() -> anyhow::Result<()> {
         .mount(&mock_server)
         .await;
 
-    let client = ServiceBuilder::new()
-        .layer(HttpClientLayer)
-        .service(Client::new());
+    let client = ServiceBuilder::new().service(Client::new()).boxed_clone();
 
     let response = client
         .clone()
@@ -145,9 +141,7 @@ async fn test_service_ext_put_json() -> anyhow::Result<()> {
         .mount(&mock_server)
         .await;
 
-    let client = ServiceBuilder::new()
-        .layer(HttpClientLayer)
-        .service(Client::new());
+    let client = ServiceBuilder::new().service(Client::new()).boxed_clone();
 
     let response = client
         .clone()

@@ -46,3 +46,6 @@ missing_errors_doc = "allow"
 
 [workspace.lints.rustdoc]
 broken_intra_doc_links = "deny"
+
+[patch.crates-io]
+reqwest = { git = "https://github.com/alekseysidorov/reqwest.git", rev = "6be9fac" }
