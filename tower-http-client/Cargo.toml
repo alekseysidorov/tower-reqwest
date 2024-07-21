@@ -40,7 +40,6 @@ wiremock = { workspace = true }
 default = ["json", "reqwest"]
 json = ["dep:serde_json"]
 reqwest = ["dep:tower-reqwest"]
-reqwest-middleware = ["tower-reqwest?/reqwest-middleware"]
 
 [[example]]
 name = "rate_limiter"

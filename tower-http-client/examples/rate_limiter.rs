@@ -4,7 +4,6 @@ use http::{Request, Response};
 use reqwest::Body;
 use tower::{ServiceBuilder, ServiceExt as _};
 use tower_http_client::ServiceExt as _;
-use tower_reqwest::HttpClientLayer;
 use wiremock::{
     matchers::{method, path},
     Mock, MockServer, ResponseTemplate,
@@ -57,10 +56,8 @@ async fn main() -> anyhow::Result<()> {
             .buffer(64)
             .rate_limit(2, Duration::from_secs(1))
             .concurrency_limit(5)
-            // Make client compatible with the `tower-http` layers.
-            .layer(HttpClientLayer)
             .service(reqwest::Client::new())
-            .map_err(|err| anyhow::anyhow!("{err}"))
+            .map_err(anyhow::Error::msg)
             .boxed_clone(),
     };
 

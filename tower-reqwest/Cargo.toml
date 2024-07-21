@@ -14,7 +14,6 @@ rust-version.workspace = true
 
 [features]
 default = []
-reqwest-middleware = ["dep:reqwest-middleware"]
 
 [dependencies]
 futures-util = { workspace = true }
@@ -22,7 +21,6 @@ http = { workspace = true }
 include-utils = { workspace = true }
 pin-project = { workspace = true }
 reqwest = { workspace = true }
-reqwest-middleware = { workspace = true, optional = true }
 thiserror = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }
