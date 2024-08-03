@@ -8,7 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
-- Added a `[rate-limiter](tower-http-client/examples/rate_limiter.rs) example.
+- Added a [retry](tower-http-client/examples/retry.rs) example.
+
+- Added a [rate-limiter](tower-http-client/examples/rate_limiter.rs) example.
 
 - **breaking:** Changed `ServiceBuilder::execute` signature to be more
   compatible with the `Service::call` method.
