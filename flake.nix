@@ -58,8 +58,12 @@
           text = ''
             cargo nextest run --workspace --all-targets --no-default-features
             cargo nextest run --workspace --all-targets --all-features
+            
             cargo test --workspace --doc --no-default-features
             cargo test --workspace --doc --all-features
+            
+            cargo run --example rate_limiter
+            cargo run --example retry
           '';
         };
 

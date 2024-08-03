@@ -31,9 +31,10 @@ tower-reqwest = { version = "0.3.2", path = "../tower-reqwest" }
 anyhow = { workspace = true }
 futures-util = { workspace = true }
 reqwest = { workspace = true }
+retry-policies = { workspace = true }
 tokio = { workspace = true }
-tower = { workspace = true, features = ["buffer", "limit"] }
-tower-http = { workspace = true, features = ["set-header", "util"] }
+tower = { workspace = true, features = ["buffer", "limit", "retry"] }
+tower-http = { workspace = true, features = ["set-header", "util", "map-request-body"] }
 wiremock = { workspace = true }
 
 [features]

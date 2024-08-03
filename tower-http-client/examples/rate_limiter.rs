@@ -60,7 +60,7 @@ async fn main() -> anyhow::Result<()> {
             // Make client compatible with the `tower-http` layers.
             .layer(HttpClientLayer)
             .service(reqwest::Client::new())
-            .map_err(|err| anyhow::anyhow!("{err}"))
+            .map_err(anyhow::Error::msg)
             .boxed_clone(),
     };
 
