@@ -7,7 +7,7 @@
 use bytes::Bytes;
 use http_body::Body as HttpBody;
 use http_body_util::BodyDataStream;
-use tower::Layer;
+use tower_layer::Layer;
 
 #[doc(inline)]
 pub use crate::error::Error;

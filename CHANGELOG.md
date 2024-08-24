@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- **breaking:** Removed `reqwest-middleware` feature from the
+  `tower-http-client` and `tower-http` crates.
+
 - Added a [retry](tower-http-client/examples/retry.rs) example.
 
 - Added a [rate-limiter](tower-http-client/examples/rate_limiter.rs) example.

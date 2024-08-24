@@ -1,6 +1,7 @@
 //! When something went wrong.
 
-pub use tower::BoxError;
+/// Alias for a type-erased error type.
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 /// This type represent all possible errors that can occurs during the request processing.
 #[derive(Debug, thiserror::Error)]
