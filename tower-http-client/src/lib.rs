@@ -16,8 +16,7 @@ use std::future::Future;
 
 use http::{Method, Uri};
 use request::ClientRequest;
-pub use tower::BoxError;
-use tower::{Service, ServiceExt as _};
+use tower_service::Service;
 
 #[cfg(feature = "reqwest")]
 pub mod adapters;
@@ -133,7 +132,7 @@ where
         ReqBody: From<R>,
     {
         // Wait until service will be ready to executing requests. It's important for buffered services.
-        self.ready().await?;
+        futures_util::future::poll_fn(|ctx| self.poll_ready(ctx)).await?;
         // And then execute the given request.
         self.call(request.map(ReqBody::from)).await
     }

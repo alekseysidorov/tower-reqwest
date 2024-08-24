@@ -3,7 +3,7 @@ description = "Adapter between reqwest and tower-http crates."
 documentation = "https://docs.rs/crate/tower-reqwest"
 name = "tower-reqwest"
 readme = "README.md"
-version = "0.3.3"
+version = "0.4.0-alpha.2"
 
 categories.workspace = true
 edition.workspace = true
@@ -14,7 +14,6 @@ rust-version.workspace = true
 
 [features]
 default = []
-reqwest-middleware = ["dep:reqwest-middleware"]
 
 [dependencies]
 bytes = { workspace = true }
@@ -25,10 +24,9 @@ http-body-util = { workspace = true }
 include-utils = { workspace = true }
 pin-project = { workspace = true }
 reqwest = { workspace = true }
-reqwest-middleware = { workspace = true, optional = true }
 thiserror = { workspace = true }
-tower = { workspace = true }
-tower-http = { workspace = true }
+tower-layer = { workspace = true }
+tower-service = { workspace = true }
 
 [dev-dependencies]
 anyhow = { workspace = true }
@@ -36,6 +34,7 @@ pretty_assertions = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
+tower = { workspace = true }
 tower-http = { workspace = true, features = ["set-header", "util", "request-id"] }
 wiremock = { workspace = true }
 

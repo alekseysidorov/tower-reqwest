@@ -5,7 +5,7 @@
 use std::{future::Future, task::Poll};
 
 use pin_project::pin_project;
-use tower::Service;
+use tower_service::Service;
 
 use crate::HttpClientService;
 

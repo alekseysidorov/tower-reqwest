@@ -3,7 +3,7 @@
 use std::{any::Any, future::Future, marker::PhantomData};
 
 use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version};
-use tower::Service;
+use tower_service::Service;
 
 use crate::ServiceExt;
 

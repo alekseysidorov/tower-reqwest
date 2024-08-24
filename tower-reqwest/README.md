@@ -50,7 +50,7 @@ async fn main() -> anyhow::Result<()> {
 
 <!-- ANCHOR_END: example -->
 
-<!-- ANCHOR_END: description -->
-
 [reqwest]: https://github.com/seanmonstar/reqwest
 [tower_http]: https://github.com/tower-rs/tower-http
+
+<!-- ANCHOR_END: description -->
