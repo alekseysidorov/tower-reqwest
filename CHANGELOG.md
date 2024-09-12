@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Added a `BoxCloneSyncService`, borrowed from this
+  [PR](https://github.com/tower-rs/tower/pull/777).
+
+- **breaking:** `request` module has been renamed to the `request_builder`.
+
 - **breaking:** Removed `reqwest-middleware` feature from the
   `tower-http-client` and `tower-http` crates.
 

@@ -3,7 +3,7 @@ name = "tower-http-client"
 description = "Extra Tower middlewares and utilities for HTTP clients."
 documentation = "https://docs.rs/crate/tower-http-client"
 readme = "README.md"
-version = "0.4.0-alpha.2"
+version = "0.4.0-alpha.3"
 
 edition.workspace = true
 license.workspace = true
@@ -13,7 +13,7 @@ keywords.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-tower-reqwest = { version = "0.4.0-alpha.2", path = "../tower-reqwest", optional = true }
+tower-reqwest = { version = "0.4.0", path = "../tower-reqwest", optional = true }
 
 bytes = { workspace = true }
 futures-util = { workspace = true }
@@ -24,6 +24,8 @@ include-utils = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true, optional = true }
 thiserror = { workspace = true }
+tower = { workspace = true, default-features = false, features = ["util"] }
+tower-layer = { workspace = true }
 tower-service = { workspace = true }
 
 [dev-dependencies]
@@ -33,18 +35,27 @@ anyhow = { workspace = true }
 reqwest = { workspace = true }
 retry-policies = { workspace = true }
 tokio = { workspace = true }
-tower = { workspace = true, features = ["buffer", "limit", "retry"] }
+tower = { workspace = true, features = ["util", "buffer", "limit", "retry"] }
 tower-http = { workspace = true, features = ["set-header", "util", "map-request-body"] }
 wiremock = { workspace = true }
 
 [features]
-default = ["json", "reqwest"]
+default = ["json", "reqwest", "util"]
+util = []
 json = ["dep:serde_json"]
 reqwest = ["dep:tower-reqwest"]
 
 [[example]]
 name = "rate_limiter"
 required-features = ["reqwest"]
+
+[[example]]
+name = "retry"
+required-features = ["reqwest"]
+
+[[test]]
+name = "service_ext"
+required-features = ["reqwest", "util"]
 
 [lints]
 workspace = true

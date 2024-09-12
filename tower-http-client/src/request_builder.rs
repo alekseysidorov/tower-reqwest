@@ -5,7 +5,7 @@ use std::{any::Any, future::Future, marker::PhantomData};
 use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version};
 use tower_service::Service;
 
-use crate::ServiceExt;
+use super::ServiceExt;
 
 /// An [`http::Request`] builder.
 ///

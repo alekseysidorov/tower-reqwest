@@ -10,18 +10,19 @@
 //! ```rust
 #![doc = include_str!("../examples/rate_limiter.rs")]
 //! ```
-//!
 
 use std::future::Future;
 
 use http::{Method, Uri};
-use request::ClientRequest;
+use request_builder::ClientRequest;
 use tower_service::Service;
 
 #[cfg(feature = "reqwest")]
 pub mod adapters;
 pub mod body_reader;
-pub mod request;
+pub mod request_builder;
+#[cfg(feature = "util")]
+pub mod util;
 
 /// An extension trait for Tower HTTP services with the typical client methods.
 ///
