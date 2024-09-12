@@ -2,7 +2,7 @@ use http::{header::USER_AGENT, HeaderValue, Method};
 use reqwest::Client;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
-use tower_http_client::ServiceExt;
+use tower_http_client::ServiceExt as _;
 use tower_reqwest::HttpClientLayer;
 use wiremock::{
     matchers::{method, path},
