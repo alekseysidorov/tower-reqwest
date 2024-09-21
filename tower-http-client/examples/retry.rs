@@ -5,7 +5,6 @@ use std::{
 };
 
 use bytes::Bytes;
-use futures_util::{future::BoxFuture, FutureExt};
 use retry_policies::{policies::ExponentialBackoff, RetryDecision};
 use tower::{ServiceBuilder, ServiceExt as _};
 use tower_http::ServiceBuilderExt as _;
@@ -32,20 +31,17 @@ impl<P> RetrySequence<P> {
         }
     }
 
-    pub fn next_attempt(self) -> ControlFlow<(), (SystemTime, Self)>
+    pub fn next_attempt(&mut self) -> ControlFlow<(), (SystemTime, &mut Self)>
     where
         P: retry_policies::RetryPolicy,
     {
         let start_time = self.start_time();
         match self.policy.should_retry(start_time, self.n_past_retries) {
-            RetryDecision::Retry { execute_after } => ControlFlow::Continue((
-                execute_after,
-                Self {
-                    policy: self.policy,
-                    start_time: Some(start_time),
-                    n_past_retries: self.n_past_retries + 1,
-                },
-            )),
+            RetryDecision::Retry { execute_after } => {
+                self.start_time = Some(execute_after);
+                self.n_past_retries += 1;
+                ControlFlow::Continue((execute_after, self))
+            }
             RetryDecision::DoNotRetry => ControlFlow::Break(()),
         }
     }
@@ -68,12 +64,12 @@ impl SimpleRetry {
 impl<ReqBody: Clone, RespBody, E>
     tower::retry::Policy<http::Request<ReqBody>, http::Response<RespBody>, E> for SimpleRetry
 {
-    type Future = BoxFuture<'static, Self>;
+    type Future = tokio::time::Sleep;
 
     fn retry(
-        &self,
-        _req: &http::Request<ReqBody>,
-        result: Result<&http::Response<RespBody>, &E>,
+        &mut self,
+        _req: &mut http::Request<ReqBody>,
+        result: &mut Result<http::Response<RespBody>, E>,
     ) -> Option<Self::Future> {
         match result {
             Ok(resp) if !resp.status().is_server_error() => {
@@ -82,25 +78,27 @@ impl<ReqBody: Clone, RespBody, E>
                 None
             }
 
-            _other => match self.0.clone().next_attempt() {
-                ControlFlow::Continue((retry_at, next_attempt)) => Some(
-                    async move {
-                        eprintln!("Making attempt #{}", next_attempt.n_past_retries);
-                        let sleep_duration = retry_at
-                            .duration_since(SystemTime::now())
-                            .unwrap_or_default();
-                        tokio::time::sleep(sleep_duration).await;
-                        Self(next_attempt)
-                    }
-                    .boxed(),
-                ),
+            _other => match self.0.next_attempt() {
+                ControlFlow::Continue((retry_at, next_attempt)) => {
+                    let n_past_retries = next_attempt.n_past_retries;
+                    let sleep_duration = retry_at
+                        .duration_since(SystemTime::now())
+                        .unwrap_or_default();
+
+                    eprintln!(
+                        "Making attempt #{n_past_retries} sleeping for {:.3}secs",
+                        sleep_duration.as_secs_f32()
+                    );
+
+                    Some(tokio::time::sleep(sleep_duration))
+                }
                 // Used all our attempts, no retry...
                 ControlFlow::Break(()) => None,
             },
         }
     }
 
-    fn clone_request(&self, req: &http::Request<ReqBody>) -> Option<http::Request<ReqBody>> {
+    fn clone_request(&mut self, req: &http::Request<ReqBody>) -> Option<http::Request<ReqBody>> {
         Some(req.clone())
     }
 }
