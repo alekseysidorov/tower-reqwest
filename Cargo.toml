@@ -35,6 +35,7 @@ tower-layer = "0.3"
 tower-http = { version = "0.6", default-features = false, features = ["util"] }
 wiremock = "0.6.0"
 retry-policies = "0.4.0"
+url = "2.5"
 
 [workspace.lints.rust]
 missing_debug_implementations = "warn"
