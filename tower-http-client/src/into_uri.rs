@@ -2,13 +2,19 @@ use http::{
     uri::{self},
     Uri,
 };
+use private::Sealed;
 
-pub trait IntoUri
-where
-    Uri: TryFrom<Self::Input>,
-    <Uri as TryFrom<Self::Input>>::Error: Into<http::Error>,
-{
+/// A helper trait to try to convert some types into `Uri`.
+///
+/// This trait is sealed and implemented only for the most suitable types.
+///
+/// Unlike the similar trait in the Reqwest, this one describes a type's representation
+/// that implements [`TryInto<Uri>`]. This approach can pass third-party types  like [`url::Url`]
+/// directly to the [`http::request::Builder::uri`] without any wrappers.
+pub trait IntoUri: Sealed {
+    /// Type that implements [`TryInto<Uri>`] conversion.
     type Input;
+    /// Converts this value into the input type for the [`TryInto<Uri>`] conversion.
     fn into_uri(self) -> Self::Input;
 }
 
@@ -98,6 +104,28 @@ impl<'a> IntoUri for &'a url::Url {
     fn into_uri(self) -> Self::Input {
         self.as_str()
     }
+}
+
+mod private {
+    use http::{uri, Uri};
+    use url::Url;
+
+    pub trait Sealed {}
+
+    impl Sealed for uri::Parts {}
+    impl Sealed for Uri {}
+    impl Sealed for &Uri {}
+
+    impl Sealed for String {}
+    impl Sealed for &String {}
+    impl Sealed for &str {}
+
+    impl Sealed for Vec<u8> {}
+    impl Sealed for &Vec<u8> {}
+    impl Sealed for &[u8] {}
+
+    impl Sealed for Url {}
+    impl Sealed for &Url {}
 }
 
 #[cfg(test)]

@@ -34,8 +34,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         ClientRequest::builder(self).method(method).uri(uri)
     }
@@ -45,8 +45,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::GET, uri)
     }
@@ -56,8 +56,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::PUT, uri)
     }
@@ -67,8 +67,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::POST, uri)
     }
@@ -78,8 +78,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::PATCH, uri)
     }
@@ -89,8 +89,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::DELETE, uri)
     }
@@ -100,8 +100,8 @@ pub trait ServiceExt<ReqBody, RespBody, Err>: Sized {
     where
         ReqBody: Default,
         U: IntoUri,
-        Uri: TryFrom<<U as IntoUri>::Input>,
-        <Uri as TryFrom<<U as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.request(Method::HEAD, uri)
     }

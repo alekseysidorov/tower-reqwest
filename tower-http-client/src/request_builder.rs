@@ -55,11 +55,10 @@ impl<'a, S, Err, ReqBody, RespBody> ClientRequest<'a, S, Err, ReqBody, RespBody>
     ///
     /// By default this is `/`.
     #[must_use]
-    pub fn uri<T>(mut self, uri: T) -> Self
+    pub fn uri<U: IntoUri>(mut self, uri: U) -> Self
     where
-        T: IntoUri,
-        Uri: TryFrom<<T as IntoUri>::Input>,
-        <Uri as TryFrom<<T as IntoUri>::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::Input>,
+        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
     {
         self.builder = self.builder.uri(uri.into_uri());
         self
