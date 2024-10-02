@@ -23,19 +23,19 @@ http-body = "1.0"
 http-body-util = "0.1"
 include-utils = "0.2"
 pin-project = "1.0"
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4"
 reqwest = { version = "0.12", default-features = false, features = ["stream"] }
+retry-policies = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-thiserror = "1.0"
+thiserror = "1.0.64"
 tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }
 tower = { version = "0.5", default-features = false }
-tower-service = "0.3"
-tower-layer = "0.3"
 tower-http = { version = "0.6", default-features = false, features = ["util"] }
-wiremock = "0.6.0"
-retry-policies = "0.4.0"
+tower-layer = "0.3"
+tower-service = "0.3"
 url = "2.5"
+wiremock = "0.6"
 
 [workspace.lints.rust]
 missing_debug_implementations = "warn"
