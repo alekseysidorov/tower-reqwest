@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- **breaking:** Extensions and utilities for Tower services that provides HTTP
+  client implementations have been moved to the `client` module.
+
 - **breaking:** `ClientRequest` and `ServiceBuilderExt` methods now use the
   `IntoUri` trait instead of `Uri: TryFrom` conversion in order to improve
   interopability with the `url` crate.

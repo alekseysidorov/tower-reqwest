@@ -5,7 +5,7 @@ use std::{any::Any, future::Future, marker::PhantomData};
 use http::{Extensions, HeaderMap, HeaderName, HeaderValue, Method, Uri, Version};
 use tower_service::Service;
 
-use crate::{IntoUri, ServiceExt as _};
+use super::{IntoUri, ServiceExt as _};
 
 /// An [`http::Request`] builder.
 ///
@@ -57,8 +57,8 @@ impl<'a, S, Err, ReqBody, RespBody> ClientRequest<'a, S, Err, ReqBody, RespBody>
     #[must_use]
     pub fn uri<U: IntoUri>(mut self, uri: U) -> Self
     where
-        Uri: TryFrom<U::Input>,
-        <Uri as TryFrom<U::Input>>::Error: Into<http::Error>,
+        Uri: TryFrom<U::TryInto>,
+        <Uri as TryFrom<U::TryInto>>::Error: Into<http::Error>,
     {
         self.builder = self.builder.uri(uri.into_uri());
         self

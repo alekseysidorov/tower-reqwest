@@ -35,7 +35,7 @@ impl<B> BodyReader<B> {
     ///
     /// ```
     /// use http_body_util::Full;
-    /// use tower_http_client::body_reader::BodyReader;
+    /// use tower_http_client::client::BodyReader;
     ///
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {
@@ -66,7 +66,7 @@ impl<B> BodyReader<B> {
     ///
     /// ```
     /// use http_body_util::Full;
-    /// use tower_http_client::body_reader::BodyReader;
+    /// use tower_http_client::client::BodyReader;
     ///
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {
@@ -93,7 +93,7 @@ impl<B> BodyReader<B> {
     /// ```
     /// use http_body_util::Full;
     /// use serde_json::{json, Value};
-    /// use tower_http_client::body_reader::BodyReader;
+    /// use tower_http_client::client::BodyReader;
     ///
     /// #[tokio::main]
     /// async fn main() -> anyhow::Result<()> {

@@ -11,17 +11,10 @@
 #![doc = include_str!("../examples/rate_limiter.rs")]
 //! ```
 
-pub use into_uri::IntoUri;
-pub use response_ext::ResponseExt;
-pub use service_ext::ServiceExt;
+pub use client::{ResponseExt, ServiceExt};
 
 #[cfg(feature = "reqwest")]
 pub mod adapters;
-pub mod body_reader;
-pub mod request_builder;
+pub mod client;
 #[cfg(feature = "util")]
 pub mod util;
-
-mod into_uri;
-mod response_ext;
-mod service_ext;

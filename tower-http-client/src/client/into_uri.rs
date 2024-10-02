@@ -12,96 +12,96 @@ use private::Sealed;
 /// that implements [`TryInto<Uri>`]. This approach can pass third-party types  like [`url::Url`]
 /// directly to the [`http::request::Builder::uri`] without any wrappers.
 pub trait IntoUri: Sealed {
-    /// Type that implements [`TryInto<Uri>`] conversion.
-    type Input;
+    ///Which kind of value should be converted to the Uri via [`TryInto<Uri>`]
+    type TryInto;
     /// Converts this value into the input type for the [`TryInto<Uri>`] conversion.
-    fn into_uri(self) -> Self::Input;
+    fn into_uri(self) -> Self::TryInto;
 }
 
 impl IntoUri for &Uri {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for Uri {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for String {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for &String {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for &str {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl<'a> IntoUri for &'a Vec<u8> {
-    type Input = &'a [u8];
+    type TryInto = &'a [u8];
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for Vec<u8> {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for &[u8] {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for uri::Parts {
-    type Input = Self;
+    type TryInto = Self;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self
     }
 }
 
 impl IntoUri for url::Url {
-    type Input = String;
+    type TryInto = String;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self.into()
     }
 }
 
 impl<'a> IntoUri for &'a url::Url {
-    type Input = &'a str;
+    type TryInto = &'a str;
 
-    fn into_uri(self) -> Self::Input {
+    fn into_uri(self) -> Self::TryInto {
         self.as_str()
     }
 }

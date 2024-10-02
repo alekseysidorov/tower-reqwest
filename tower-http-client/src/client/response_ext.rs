@@ -1,3 +1,5 @@
+use super::BodyReader;
+
 /// Extension trait for the [`http::Response`].
 pub trait ResponseExt<T>: Sized {
     /// Consumes the response and returns a body reader wrapper.
@@ -22,11 +24,11 @@ pub trait ResponseExt<T>: Sized {
     /// }
     /// ```
     ///
-    fn body_reader(self) -> crate::body_reader::BodyReader<T>;
+    fn body_reader(self) -> BodyReader<T>;
 }
 
 impl<T> ResponseExt<T> for http::Response<T> {
-    fn body_reader(self) -> crate::body_reader::BodyReader<T> {
-        crate::body_reader::BodyReader::new(self.into_body())
+    fn body_reader(self) -> BodyReader<T> {
+        BodyReader::new(self.into_body())
     }
 }

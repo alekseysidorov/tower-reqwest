@@ -8,7 +8,7 @@ use bytes::Bytes;
 use retry_policies::{policies::ExponentialBackoff, RetryDecision};
 use tower::{ServiceBuilder, ServiceExt as _};
 use tower_http::ServiceBuilderExt as _;
-use tower_http_client::ServiceExt as _;
+use tower_http_client::client::ServiceExt as _;
 use tower_reqwest::{into_reqwest_body, HttpClientLayer};
 use wiremock::{
     matchers::{method, path},
