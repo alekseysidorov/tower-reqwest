@@ -8,7 +8,7 @@ pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 pub enum Error {
     /// An error occurred in the underlying client.
     #[error("Client error: {0}")]
-    Client(ClientError),
+    Client(#[from] ClientError),
     /// An error occurred while processing a middleware.
     #[error("Middleware error: {0}")]
     Middleware(BoxError),
@@ -18,6 +18,7 @@ pub enum Error {
 #[derive(Debug, thiserror::Error)]
 #[error("{inner}")]
 pub struct ClientError {
+    #[source]
     inner: BoxError,
     kind: ClientErrorKind,
 }

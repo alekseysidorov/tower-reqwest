@@ -8,6 +8,9 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Added `#[from]` and `#[source]` to `Error` and `ClientError` to expose the
+  underlying source error.
+
 - Added a `BoxCloneSyncService`, borrowed from this
   [PR](https://github.com/tower-rs/tower/pull/777).
 
