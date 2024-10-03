@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+- **breaking:** `ClientRequest` and `ServiceBuilderExt` methods now use the
+  `IntoUri` trait instead of `Uri: TryFrom` conversion in order to improve
+  interopability with the `url` crate.
+
 - Added `#[from]` and `#[source]` to `Error` and `ClientError` to expose the
   underlying source error.
 
