@@ -2,7 +2,7 @@ use http::{header::USER_AGENT, HeaderValue, Method};
 use reqwest::Client;
 use tower::ServiceBuilder;
 use tower_http::ServiceBuilderExt;
-use tower_http_client::ServiceExt as _;
+use tower_http_client::client::ServiceExt as _;
 use tower_reqwest::HttpClientLayer;
 use wiremock::{
     matchers::{method, path},
@@ -113,7 +113,7 @@ async fn test_service_ext_get() -> anyhow::Result<()> {
 #[tokio::test]
 async fn test_service_ext_put_json() -> anyhow::Result<()> {
     use http::header::CONTENT_TYPE;
-    use tower_http_client::ResponseExt;
+    use tower_http_client::client::ResponseExt as _;
     use wiremock::Request;
 
     #[derive(Debug, serde::Serialize, serde::Deserialize)]

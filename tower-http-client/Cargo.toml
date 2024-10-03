@@ -27,6 +27,7 @@ thiserror = { workspace = true }
 tower = { workspace = true, default-features = false, features = ["util"] }
 tower-layer = { workspace = true }
 tower-service = { workspace = true }
+url = { workspace = true }
 
 [dev-dependencies]
 tower-reqwest = { version = "0.4.0-alpha.2", path = "../tower-reqwest" }
