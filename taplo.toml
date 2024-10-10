@@ -1,9 +1,0 @@
-include = ["**/*.toml"]
-
-[[rule]]
-include = ["**/Cargo.toml"]
-keys = ["dependencies", "*-dependencies", "members", "lints"]
-
-[rule.formatting]
-reorder_keys = true
-column_width = 100
